@@ -2,6 +2,27 @@
 
 Implementación del clásico juego arcade **Breakout** desarrollado en lenguaje Jack para la plataforma Nand2Tetris.
 
+## ⚡ OPTIMIZACIÓN v1.0 - Loop Determinista Implementado
+
+**IMPORTANTE**: Este proyecto ha sido optimizado con un **loop de juego determinista** que funciona independientemente del speed slider del CPU Emulator. Ver [docs/RESUMEN_FINAL.md](docs/RESUMEN_FINAL.md) para detalles completos.
+
+### 🎯 Mejoras Clave:
+- ✅ **Frame limiter real** con `Sys.wait()` - no más busy-loops
+- ✅ **Física normalizada** - velocidad constante independiente del emulador
+- ✅ **Dirty rectangle rendering** - sin parpadeo
+- ✅ **Máquina de estados robusta** - sin bloqueos
+- ✅ **Parámetros tunables** - fácil ajuste de velocidad
+
+### ⚙️ Ajuste Rápido:
+Editar `src/BreakoutGame.jack`, líneas 47-52:
+```jack
+let UPDATE_EVERY = 3;       // Física cada 3 frames
+let FRAME_WAIT_MS = 2;      // 2ms wait por frame
+let DEBUG = false;          // true para debug
+```
+
+---
+
 ## 📋 Descripción
 
 Breakout es un juego arcade donde el jugador controla una paleta en la parte inferior de la pantalla para mantener una pelota en juego y destruir todos los bloques ubicados en la parte superior. Este proyecto es parte del curso de Organización de Computadores y demuestra la programación a bajo nivel usando el lenguaje Jack.
@@ -9,13 +30,15 @@ Breakout es un juego arcade donde el jugador controla una paleta en la parte inf
 ## 🎮 Características del Juego
 
 - ✅ Paleta controlable con teclas de flecha
-- ✅ Física de pelota con rebotes realistas
+- ✅ Física de pelota con rebotes realistas **[OPTIMIZADA]**
 - ✅ Sistema de bloques destructibles
 - ✅ Sistema de vidas (3 vidas iniciales)
 - ✅ Sistema de puntuación
 - ✅ Detección de colisiones precisa
 - ✅ Pantallas de inicio, victoria y game over
 - ✅ Sistema de pausa
+- ✅ **Loop determinista** - funciona igual en cualquier velocidad de emulador
+- ✅ **Modo DEBUG** - visualiza contadores de frame y tick
 
 ## 🕹️ Controles
 
@@ -25,6 +48,7 @@ Breakout es un juego arcade donde el jugador controla una paleta en la parte inf
 | **→** (Flecha Derecha) | Mover paleta a la derecha |
 | **Espacio** | Iniciar juego / Pausar |
 | **Q** | Salir del juego |
+| **Enter** | Reiniciar (desde Game Over/Victory) |
 
 ## 📁 Estructura del Proyecto
 
@@ -89,7 +113,7 @@ Controlador principal que maneja:
 
 #### `Paddle`
 Representa la paleta controlada por el jugador:
-- Movimiento horizontal
+- Movimiento hor izontal
 - Límites de pantalla
 - Renderizado
 

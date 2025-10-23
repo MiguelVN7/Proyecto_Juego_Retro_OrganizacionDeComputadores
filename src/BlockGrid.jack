@@ -88,10 +88,12 @@ class BlockGrid {
     }
     
     /** Verificar colisión con la pelota y manejar destrucción */
-    method void checkCollision(Ball ball) {
+    /** RETORNA los puntos del bloque destruido (0 si no hubo colisión) */
+    method int checkCollision(Ball ball) {
         var int i;
         var Block block;
         var boolean collision;
+        var int points;
         
         let i = 0;
         while (i < totalBlocks) {
@@ -102,6 +104,9 @@ class BlockGrid {
                 let collision = CollisionDetector.checkBallBlock(ball, block);
                 
                 if (collision) {
+                    // Obtener puntos ANTES de destruir
+                    let points = block.getPoints();
+                    
                     // Destruir el bloque
                     do block.destroy();
                     let activeBlocks = activeBlocks - 1;
@@ -109,19 +114,16 @@ class BlockGrid {
                     // Hacer rebotar la pelota
                     do ball.bounceVertical();
                     
-                    // TODO: Actualizar puntuación en BreakoutGame
-                    // (esto se puede hacer desde BreakoutGame directamente)
-                    
-                    // Salir del loop después de primera colisión
-                    // (para evitar múltiples colisiones en un frame)
-                    return;
+                    // Retornar puntos para que BreakoutGame actualice score
+                    return points;
                 }
             }
             
             let i = i + 1;
         }
         
-        return;
+        // No hubo colisión
+        return 0;
     }
     
     /** Verificar si todos los bloques fueron destruidos */

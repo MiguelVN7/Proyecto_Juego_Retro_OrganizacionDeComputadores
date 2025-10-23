@@ -1,0 +1,427 @@
+function BlockGrid.new 7
+    push constant 10
+    call Memory.alloc 1
+    pop pointer 0
+    push argument 0
+    pop this 1
+    push argument 1
+    pop this 2
+    push this 1
+    push this 2
+    call Math.multiply 2
+    pop this 3
+    push constant 45
+    pop this 4
+    push constant 10
+    pop this 5
+    push constant 2
+    pop this 6
+    push constant 10
+    pop this 7
+    push constant 30
+    pop this 8
+    push this 3
+    pop this 9
+    push this 3
+    call Array.new 1
+    pop this 0
+    push constant 0
+    pop local 0
+label BlockGrid_0
+    push local 0
+    push this 3
+    lt
+    not
+    if-goto BlockGrid_1
+    push local 0
+    push this 2
+    call Math.divide 2
+    pop local 1
+    push local 0
+    push local 1
+    push this 2
+    call Math.multiply 2
+    sub
+    pop local 2
+    push this 7
+    push local 2
+    push this 4
+    push this 6
+    add
+    call Math.multiply 2
+    add
+    pop local 4
+    push this 8
+    push local 1
+    push this 5
+    push this 6
+    add
+    call Math.multiply 2
+    add
+    pop local 5
+    push local 4
+    push local 5
+    push this 4
+    push this 5
+    push constant 10
+    call Block.new 5
+    pop local 6
+    push local 0
+    push this 0
+    add
+    push local 6
+    pop temp 0
+    pop pointer 1
+    push temp 0
+    pop that 0
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto BlockGrid_0
+label BlockGrid_1
+    push pointer 0
+    return
+function BlockGrid.draw 2
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop local 0
+label BlockGrid_2
+    push local 0
+    push this 3
+    lt
+    not
+    if-goto BlockGrid_3
+    push local 0
+    push this 0
+    add
+    pop pointer 1
+    push that 0
+    pop local 1
+    push local 1
+    call Block.isActive 1
+    not
+    if-goto BlockGrid_5
+    push local 1
+    call Block.draw 1
+    pop temp 0
+    goto BlockGrid_4
+label BlockGrid_5
+label BlockGrid_4
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto BlockGrid_2
+label BlockGrid_3
+    push constant 0
+    return
+function BlockGrid.checkCollision 4
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop local 0
+label BlockGrid_6
+    push local 0
+    push this 3
+    lt
+    not
+    if-goto BlockGrid_7
+    push local 0
+    push this 0
+    add
+    pop pointer 1
+    push that 0
+    pop local 1
+    push local 1
+    call Block.isActive 1
+    not
+    if-goto BlockGrid_9
+    push argument 1
+    push local 1
+    call CollisionDetector.checkBallBlock 2
+    pop local 2
+    push local 2
+    not
+    if-goto BlockGrid_11
+    push local 1
+    call Block.getPoints 1
+    pop local 3
+    push local 1
+    call Block.destroy 1
+    pop temp 0
+    push this 9
+    push constant 1
+    sub
+    pop this 9
+    push argument 1
+    call Ball.bounceVertical 1
+    pop temp 0
+    push local 3
+    return
+    goto BlockGrid_10
+label BlockGrid_11
+label BlockGrid_10
+    goto BlockGrid_8
+label BlockGrid_9
+label BlockGrid_8
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto BlockGrid_6
+label BlockGrid_7
+    push constant 0
+    return
+function BlockGrid.allBlocksDestroyed 0
+    push argument 0
+    pop pointer 0
+    push this 9
+    push constant 0
+    eq
+    return
+function BlockGrid.getRemainingBlocks 0
+    push argument 0
+    pop pointer 0
+    push this 9
+    return
+function BlockGrid.getTotalBlocks 0
+    push argument 0
+    pop pointer 0
+    push this 3
+    return
+function BlockGrid.getBlock 0
+    push argument 0
+    pop pointer 0
+    push argument 1
+    push constant 1
+    neg
+    gt
+    push argument 1
+    push this 3
+    lt
+    and
+    not
+    if-goto BlockGrid_13
+    push argument 1
+    push this 0
+    add
+    pop pointer 1
+    push that 0
+    return
+    goto BlockGrid_12
+label BlockGrid_13
+label BlockGrid_12
+    push constant 0
+    return
+function BlockGrid.getBlockAt 1
+    push argument 0
+    pop pointer 0
+    push argument 1
+    push constant 1
+    neg
+    gt
+    push argument 1
+    push this 1
+    lt
+    and
+    not
+    if-goto BlockGrid_15
+    push argument 2
+    push constant 1
+    neg
+    gt
+    push argument 2
+    push this 2
+    lt
+    and
+    not
+    if-goto BlockGrid_17
+    push argument 1
+    push this 2
+    call Math.multiply 2
+    push argument 2
+    add
+    pop local 0
+    push local 0
+    push this 0
+    add
+    pop pointer 1
+    push that 0
+    return
+    goto BlockGrid_16
+label BlockGrid_17
+label BlockGrid_16
+    goto BlockGrid_14
+label BlockGrid_15
+label BlockGrid_14
+    push constant 0
+    return
+function BlockGrid.reset 2
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop local 0
+label BlockGrid_18
+    push local 0
+    push this 3
+    lt
+    not
+    if-goto BlockGrid_19
+    push local 0
+    push this 0
+    add
+    pop pointer 1
+    push that 0
+    pop local 1
+    push local 1
+    call Block.activate 1
+    pop temp 0
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto BlockGrid_18
+label BlockGrid_19
+    push this 3
+    pop this 9
+    push constant 0
+    return
+function BlockGrid.destroyRandom 3
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop local 1
+    push constant 0
+    pop local 0
+label BlockGrid_20
+    push local 1
+    push argument 1
+    lt
+    push local 0
+    push this 3
+    lt
+    and
+    not
+    if-goto BlockGrid_21
+    push local 0
+    push this 0
+    add
+    pop pointer 1
+    push that 0
+    pop local 2
+    push local 2
+    call Block.isActive 1
+    not
+    if-goto BlockGrid_23
+    push local 2
+    call Block.destroy 1
+    pop temp 0
+    push this 9
+    push constant 1
+    sub
+    pop this 9
+    push local 1
+    push constant 1
+    add
+    pop local 1
+    goto BlockGrid_22
+label BlockGrid_23
+label BlockGrid_22
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto BlockGrid_20
+label BlockGrid_21
+    push constant 0
+    return
+function BlockGrid.getRows 0
+    push argument 0
+    pop pointer 0
+    push this 1
+    return
+function BlockGrid.getCols 0
+    push argument 0
+    pop pointer 0
+    push this 2
+    return
+function BlockGrid.hasBlockAt 2
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop local 0
+label BlockGrid_24
+    push local 0
+    push this 3
+    lt
+    not
+    if-goto BlockGrid_25
+    push local 0
+    push this 0
+    add
+    pop pointer 1
+    push that 0
+    pop local 1
+    push local 1
+    call Block.isActive 1
+    not
+    if-goto BlockGrid_27
+    push local 1
+    push argument 1
+    push argument 2
+    call Block.contains 3
+    not
+    if-goto BlockGrid_29
+    push constant 1
+    neg
+    return
+    goto BlockGrid_28
+label BlockGrid_29
+label BlockGrid_28
+    goto BlockGrid_26
+label BlockGrid_27
+label BlockGrid_26
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto BlockGrid_24
+label BlockGrid_25
+    push constant 0
+    return
+function BlockGrid.dispose 2
+    push argument 0
+    pop pointer 0
+    push constant 0
+    pop local 0
+label BlockGrid_30
+    push local 0
+    push this 3
+    lt
+    not
+    if-goto BlockGrid_31
+    push local 0
+    push this 0
+    add
+    pop pointer 1
+    push that 0
+    pop local 1
+    push local 1
+    call Block.dispose 1
+    pop temp 0
+    push local 0
+    push constant 1
+    add
+    pop local 0
+    goto BlockGrid_30
+label BlockGrid_31
+    push this 0
+    call Array.dispose 1
+    pop temp 0
+    push pointer 0
+    call Memory.deAlloc 1
+    pop temp 0
+    push constant 0
+    return

@@ -49,8 +49,9 @@ class Paddle {
     
     /** Mover paleta a la izquierda */
     method void moveLeft() {
-        // Borrar posición actual
-        do erase();
+        var int oldX;
+        
+        let oldX = x;
         
         // Calcular nueva posición
         if (x > (minX + speed)) {
@@ -59,15 +60,25 @@ class Paddle {
             let x = minX;  // No pasar el límite izquierdo
         }
         
-        // Dibujar en nueva posición
-        do draw();
+        // Solo redibujar si la posición realmente cambió
+        if (~(x = oldX)) {
+            // Borrar TODA la posición anterior
+            do Screen.setColor(false);
+            do Screen.drawRectangle(oldX, y, oldX + width, y + height);
+            
+            // Dibujar en nueva posición
+            do Screen.setColor(true);
+            do Screen.drawRectangle(x, y, x + width, y + height);
+        }
+        
         return;
     }
     
     /** Mover paleta a la derecha */
     method void moveRight() {
-        // Borrar posición actual
-        do erase();
+        var int oldX;
+        
+        let oldX = x;
         
         // Calcular nueva posición
         if (x < (maxX - speed)) {
@@ -76,8 +87,17 @@ class Paddle {
             let x = maxX;  // No pasar el límite derecho
         }
         
-        // Dibujar en nueva posición
-        do draw();
+        // Solo redibujar si la posición realmente cambió
+        if (~(x = oldX)) {
+            // Borrar TODA la posición anterior
+            do Screen.setColor(false);
+            do Screen.drawRectangle(oldX, y, oldX + width, y + height);
+            
+            // Dibujar en nueva posición
+            do Screen.setColor(true);
+            do Screen.drawRectangle(x, y, x + width, y + height);
+        }
+        
         return;
     }
     
@@ -114,6 +134,21 @@ class Paddle {
             }
         }
         return false;
+    }
+    
+    /** Reiniciar posición de la paleta */
+    method void reset(int newX, int newY) {
+        // Borrar posición actual
+        do erase();
+        
+        // Establecer nueva posición
+        let x = newX;
+        let y = newY;
+        
+        // Dibujar en nueva posición
+        do draw();
+        
+        return;
     }
     
     /** Liberar memoria */

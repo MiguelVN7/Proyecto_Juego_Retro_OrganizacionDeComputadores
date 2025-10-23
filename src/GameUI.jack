@@ -1,13 +1,17 @@
 // GameUI.jack
 // Maneja la interfaz de usuario del juego
 // Muestra puntuación, vidas, mensajes y pantallas
+// OPTIMIZADO: Sin memory leaks en HUD
 
 class GameUI {
     
     /** Mostrar puntuación en pantalla */
     function void drawScore(int score) {
-        var String scoreText;
+        // Limpiar área del score primero (borrar texto anterior)
+        do Screen.setColor(false);  // Negro
+        do Screen.drawRectangle(0, 0, 120, 15);  // Borrar área del score
         
+        // Dibujar nuevo score
         do Output.moveCursor(0, 0);  // Esquina superior izquierda
         do Output.printString("SCORE: ");
         do Output.printInt(score);
@@ -17,8 +21,11 @@ class GameUI {
     
     /** Mostrar vidas restantes */
     function void drawLives(int lives) {
-        var int i;
+        // Limpiar área de lives primero
+        do Screen.setColor(false);  // Negro
+        do Screen.drawRectangle(320, 0, 450, 15);  // Borrar área de lives
         
+        // Dibujar nuevas lives
         do Output.moveCursor(0, 40);  // Parte superior derecha
         do Output.printString("LIVES: ");
         do Output.printInt(lives);
@@ -28,6 +35,11 @@ class GameUI {
     
     /** Mostrar nivel actual */
     function void drawLevel(int level) {
+        // Limpiar área de level primero
+        do Screen.setColor(false);  // Negro
+        do Screen.drawRectangle(160, 0, 280, 15);  // Borrar área de level
+        
+        // Dibujar nuevo level
         do Output.moveCursor(0, 20);  // Centro superior
         do Output.printString("LEVEL: ");
         do Output.printInt(level);
@@ -255,16 +267,24 @@ class GameUI {
         do Screen.setColor(true);
         
         // Líneas verticales
+        // ✅ CRÍTICO: i debe ser < 512 para evitar dibujar en x=512
         let i = 0;
         while (i < 512) {
-            do Screen.drawLine(i, 20, i, 255);
+            // Solo dibujar si i está dentro de límites seguros
+            if ((i > 0) & (i < 511)) {
+                do Screen.drawLine(i, 20, i, 255);
+            }
             let i = i + 64;
         }
         
         // Líneas horizontales
+        // ✅ CRÍTICO: i debe ser < 256 para evitar dibujar en y=256
         let i = 20;
         while (i < 256) {
-            do Screen.drawLine(0, i, 511, i);
+            // Solo dibujar si i está dentro de límites seguros
+            if ((i > 20) & (i < 255)) {
+                do Screen.drawLine(0, i, 511, i);
+            }
             let i = i + 32;
         }
         

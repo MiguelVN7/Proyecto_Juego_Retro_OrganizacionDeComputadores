@@ -33,15 +33,37 @@ class Ball {
     
     /** Dibujar la pelota en su posición actual */
     method void draw() {
-        do Screen.setColor(true);  // Color blanco (sólido)
-        do Screen.drawCircle(x, y, radius);
+        var int drawX, drawY;
+        
+        // Clampear coordenadas para asegurar que estén dentro de pantalla
+        let drawX = x;
+        let drawY = y;
+        
+        if (drawX < radius) { let drawX = radius; }
+        if (drawX > (511 - radius)) { let drawX = 511 - radius; }
+        if (drawY < (radius + 20)) { let drawY = radius + 20; }
+        if (drawY > (255 - radius)) { let drawY = 255 - radius; }
+        
+        do Screen.setColor(true);
+        do Screen.drawCircle(drawX, drawY, radius);
         return;
     }
     
     /** Borrar la pelota (útil antes de moverla) */
     method void erase() {
-        do Screen.setColor(false);  // Color negro (fondo)
-        do Screen.drawCircle(x, y, radius);
+        var int drawX, drawY;
+        
+        // Clampear coordenadas para asegurar que estén dentro de pantalla
+        let drawX = x;
+        let drawY = y;
+        
+        if (drawX < radius) { let drawX = radius; }
+        if (drawX > (511 - radius)) { let drawX = 511 - radius; }
+        if (drawY < (radius + 20)) { let drawY = radius + 20; }
+        if (drawY > (255 - radius)) { let drawY = 255 - radius; }
+        
+        do Screen.setColor(false);
+        do Screen.drawCircle(drawX, drawY, radius);
         return;
     }
     
@@ -50,11 +72,11 @@ class Ball {
         // Borrar posición actual
         do erase();
         
-        // Actualizar posición
+        // Actualizar posición lógica (puede salir de límites temporalmente)
         let x = x + velocityX;
         let y = y + velocityY;
         
-        // Dibujar en nueva posición
+        // Dibujar en nueva posición (draw() se encarga del clamping)
         do draw();
         
         return;
@@ -106,6 +128,34 @@ class Ball {
     /** Establecer velocidad Y (útil para física avanzada) */
     method void setVelocityY(int vy) {
         let velocityY = vy;
+        return;
+    }
+    
+    /** Establecer posición X (útil para separar de colisiones) */
+    method void setX(int newX) {
+        // Borrar posición actual
+        do erase();
+        
+        // Actualizar posición X
+        let x = newX;
+        
+        // Redibujar en nueva posición
+        do draw();
+        
+        return;
+    }
+    
+    /** Establecer posición Y (útil para separar de colisiones) */
+    method void setY(int newY) {
+        // Borrar posición actual
+        do erase();
+        
+        // Actualizar posición Y
+        let y = newY;
+        
+        // Redibujar en nueva posición
+        do draw();
+        
         return;
     }
     

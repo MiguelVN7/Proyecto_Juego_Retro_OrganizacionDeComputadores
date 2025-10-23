@@ -1,6 +1,7 @@
 // BreakoutGame.jack
 // Clase principal del juego que maneja la lógica general
 // Controla el estado del juego, puntuación, vidas y niveles
+// OPTIMIZADO: Loop determinista con frame limiter y dirty-rectangle rendering
 
 class BreakoutGame {
     // Componentes del juego
@@ -21,11 +22,51 @@ class BreakoutGame {
     field int screenWidth;
     field int screenHeight;
     
+    // ========== PARAMETROS TUNABLES ==========
+    // Ajustar estos valores para cambiar la velocidad del juego
+    // independientemente del speed slider del CPU Emulator
+    
+    field int UPDATE_EVERY;      // Actualizar física cada N frames (2-4 recomendado)
+    field int FRAME_WAIT_MS;     // Milisegundos de espera por frame (1-3 recomendado)
+    field boolean DEBUG;         // true para mostrar contadores en pantalla
+    
+    // Contadores de timing
+    field int frame;             // Contador global de frames
+    field int tick;              // Contador de actualizaciones de física
+    
+    // Estados del juego (máquina de estados)
+    field int state;             // 0=MENU, 1=PLAYING, 2=LOST_LIFE, 3=GAME_OVER, 4=VICTORY
+    // =========================================
+    
+    // Cache para HUD (evitar redibujado innecesario)
+    field int lastDrawnScore;
+    field int lastDrawnLives;
+    field int lastDrawnLevel;
+    
     /** Constructor - Inicializa el juego */
     constructor BreakoutGame new() {
         // Configurar dimensiones de pantalla
         let screenWidth = 512;
         let screenHeight = 256;
+        
+        // ========== CONFIGURAR PARAMETROS TUNABLES ==========
+        // Ajustar estos valores según comportamiento del emulador:
+        // - Si el juego va muy rápido: aumentar UPDATE_EVERY o FRAME_WAIT_MS
+        // - Si el juego va muy lento: reducir UPDATE_EVERY o FRAME_WAIT_MS
+        let UPDATE_EVERY = 3;       // Física se actualiza cada 3 frames
+        let FRAME_WAIT_MS = 2;      // 2ms de espera por frame (evita busy-loop)
+        let DEBUG = false;          // Cambiar a true para ver contadores
+        // ====================================================
+        
+        // Inicializar contadores
+        let frame = 0;
+        let tick = 0;
+        let state = 0;              // Empezar en MENU
+        
+        // Inicializar cache de HUD (para evitar redibujado innecesario)
+        let lastDrawnScore = -1;
+        let lastDrawnLives = -1;
+        let lastDrawnLevel = -1;
         
         // Inicializar estado del juego
         let score = 0;
@@ -44,39 +85,113 @@ class BreakoutGame {
         return this;
     }
     
-    /** Loop principal del juego */
+    /** Loop principal del juego - OPTIMIZADO para timing determinista */
     method void run() {
         var char key;
-        var int delay;
         
-        // Mostrar pantalla de inicio
+        // Mostrar pantalla de inicio y esperar input
+        do Screen.clearScreen();
         do GameUI.showStartScreen();
-        do waitForSpaceKey();
         
-        // Loop principal del juego
+        // Loop principal del juego - MAQUINA DE ESTADOS DETERMINISTA
         while (running) {
-            // Leer input del teclado
-            let key = Keyboard.keyPressed();
             
-            // Procesar input
-            do processInput(key);
-            
-            // Si no está pausado ni terminado, actualizar juego
-            if ((~paused) & (~gameOver) & (~victory)) {
-                do update();
+            // ===== STATE 0: MENU =====
+            if (state = 0) {
+                let key = Keyboard.keyPressed();
+                if (key = 32) {  // Espacio presionado
+                    do resetLevel();          // Inicializar nivel
+                    do initialDraw();         // Dibujar todo (una sola vez)
+                    let state = 1;            // Transición a PLAYING
+                    do waitForKeyRelease();   // Evitar input repetido
+                }
+                if (key = 81) {  // Q para salir desde menú
+                    let running = false;
+                }
             }
             
-            // Pequeño delay para controlar velocidad
-            let delay = 0;
-            while (delay < 50) {
-                let delay = delay + 1;
+            // ===== STATE 1: PLAYING =====
+            if (state = 1) {
+                let key = Keyboard.keyPressed();
+                
+                // Procesar input del jugador
+                do processInput(key);
+                
+                // UPDATE de física solo cada UPDATE_EVERY frames (normalización)
+                if ((frame / UPDATE_EVERY) * UPDATE_EVERY = frame) {
+                    do updatePhysics();       // Mover bola, detectar colisiones
+                    let tick = tick + 1;      // Incrementar contador de ticks
+                }
+                
+                // RENDER parcial: solo borra y redibuja lo que cambió
+                do renderFrame();
+                
+                // DEBUG: Mostrar contadores si está activado
+                if (DEBUG) {
+                    do showDebugInfo();
+                }
+                
+                // Verificar condiciones de transición
+                if (ball.getY() > screenHeight) {
+                    let state = 2;            // Transición a LOST_LIFE
+                }
+                if (blockGrid.allBlocksDestroyed()) {
+                    let state = 4;            // Transición a VICTORY
+                }
             }
+            
+            // ===== STATE 2: LOST_LIFE =====
+            if (state = 2) {
+                do loseLifeTransition();      // Maneja pérdida de vida
+                let state = 1;                // Volver a PLAYING (o a GAME_OVER si lives=0)
+                if (gameOver) {
+                    let state = 3;
+                }
+            }
+            
+            // ===== STATE 3: GAME_OVER =====
+            if (state = 3) {
+                do GameUI.showGameOver(score);
+                let key = Keyboard.keyPressed();
+                if (key = 81) {  // Q para salir
+                    let running = false;
+                }
+                // Opcionalmente: Enter (131) para reiniciar
+                if (key = 128) {  // Enter
+                    do resetGame();
+                    do Screen.clearScreen();
+                    do GameUI.showStartScreen();
+                    let state = 0;  // Volver al menú
+                }
+            }
+            
+            // ===== STATE 4: VICTORY =====
+            if (state = 4) {
+                do GameUI.showVictory(score);
+                let key = Keyboard.keyPressed();
+                if (key = 81) {  // Q para salir
+                    let running = false;
+                }
+                if (key = 128) {  // Enter para reiniciar
+                    do resetGame();
+                    do Screen.clearScreen();
+                    do GameUI.showStartScreen();
+                    let state = 0;
+                }
+            }
+            
+            // Incrementar contador de frames
+            let frame = frame + 1;
+            
+            // FRAME LIMITER: pequeño wait para desacoplar del CPU slider
+            // Este wait hace que el juego sea determinista
+            do Sys.wait(FRAME_WAIT_MS);
         }
         
         return;
     }
     
-    /** Procesar entrada del usuario */
+    /** Procesar entrada del usuario (solo movimiento y pausa) */
     method void processInput(char key) {
         // Flecha izquierda (130)
         if (key = 130) {
@@ -90,16 +205,14 @@ class BreakoutGame {
         
         // Espacio (32) - Pausar/Despausar
         if (key = 32) {
-            if (~gameOver & ~victory) {
-                let paused = ~paused;
-                if (paused) {
-                    do GameUI.showPauseScreen();
-                }
-                do waitForKeyRelease();
+            let paused = ~paused;
+            if (paused) {
+                do GameUI.showPauseScreen();
             }
+            do waitForKeyRelease();
         }
         
-        // Q (81) - Salir
+        // Q (81) - Salir del juego
         if (key = 81) {
             let running = false;
         }
@@ -107,8 +220,16 @@ class BreakoutGame {
         return;
     }
     
-    /** Actualizar estado del juego */
-    method void update() {
+    /** Actualizar física del juego (movimiento y colisiones) */
+    /** SEPARADO del render para desacoplar lógica de dibujo */
+    method void updatePhysics() {
+        var int earnedPoints;
+        
+        // No actualizar si está pausado
+        if (paused) {
+            return;
+        }
+        
         // Mover la pelota
         do ball.move();
         
@@ -118,47 +239,101 @@ class BreakoutGame {
         // Verificar colisión con la paleta
         do checkPaddleCollision();
         
-        // Verificar colisión con bloques
-        do blockGrid.checkCollision(ball);
-        
-        // Verificar si la pelota cayó
-        if (ball.getY() > screenHeight) {
-            do loseLife();
+        // Verificar colisión con bloques y actualizar score
+        let earnedPoints = blockGrid.checkCollision(ball);
+        if (earnedPoints > 0) {
+            let score = score + earnedPoints;
         }
         
-        // Verificar victoria (todos los bloques destruidos)
-        if (blockGrid.allBlocksDestroyed()) {
-            let victory = true;
-            do GameUI.showVictory(score);
+        return;
+    }
+    
+    /** Renderizar frame actual (OPTIMIZADO: solo dibuja cambios) */
+    /** NO hace clearScreen() - usa dirty rectangles */
+    method void renderFrame() {
+        // La bola y el paddle ya se borran/redibujan en sus métodos move()
+        // Solo redibujar el HUD si cambió (OPTIMIZACIÓN CRÍTICA)
+        do drawHUDIfChanged();
+        
+        return;
+    }
+    
+    /** Dibujar HUD solo si los valores cambiaron (OPTIMIZACIÓN ANTI-MEMORY-LEAK) */
+    method void drawHUDIfChanged() {
+        // Solo redibujar score si cambió
+        if (~(score = lastDrawnScore)) {
+            do GameUI.drawScore(score);
+            let lastDrawnScore = score;
         }
         
-        // Redibujar todo
-        do draw();
+        // Solo redibujar lives si cambió
+        if (~(lives = lastDrawnLives)) {
+            do GameUI.drawLives(lives);
+            let lastDrawnLives = lives;
+        }
         
+        // Solo redibujar level si cambió
+        if (~(level = lastDrawnLevel)) {
+            do GameUI.drawLevel(level);
+            let lastDrawnLevel = level;
+        }
+        
+        return;
+    }
+    
+    /** Dibujar HUD (puntuación, vidas, nivel) - FORZADO */
+    method void drawHUD() {
+        // Esta versión SIEMPRE dibuja (para initialDraw())
+        do GameUI.drawScore(score);
+        do GameUI.drawLives(lives);
+        do GameUI.drawLevel(level);
+        
+        // Actualizar cache
+        let lastDrawnScore = score;
+        let lastDrawnLives = lives;
+        let lastDrawnLevel = level;
+        
+        return;
+    }
+    
+    /** Dibujo inicial completo (solo se llama una vez al iniciar nivel) */
+    method void initialDraw() {
+        do Screen.clearScreen();      // Limpiar pantalla (solo una vez)
+        do blockGrid.draw();          // Dibujar bloques
+        do paddle.draw();             // Dibujar paleta
+        do ball.draw();               // Dibujar bola
+        do drawHUD();                 // Dibujar HUD
         return;
     }
     
     /** Verificar colisiones con paredes */
     method void checkWallCollisions() {
-        var int ballX, ballY, ballRadius;
+        var int ballX, ballY, ballRadius, ballVelY;
         
         let ballX = ball.getX();
         let ballY = ball.getY();
         let ballRadius = ball.getRadius();
+        let ballVelY = ball.getVelocityY();
         
         // Pared izquierda
         if (ballX < ballRadius) {
             do ball.bounceHorizontal();
+            // ✅ Separar de la pared
+            do ball.setX(ballRadius + 1);
         }
         
         // Pared derecha
         if (ballX > (screenWidth - ballRadius)) {
             do ball.bounceHorizontal();
+            // ✅ Separar de la pared
+            do ball.setX(screenWidth - ballRadius - 1);
         }
         
-        // Pared superior
-        if (ballY < ballRadius) {
+        // Pared superior - CRÍTICO: Detectar cuando va HACIA arriba
+        if ((ballY < (ballRadius + 20)) & (ballVelY < 0)) {
             do ball.bounceVertical();
+            // ✅ Separar del techo con margen extra
+            do ball.setY(ballRadius + 22);
         }
         
         return;
@@ -166,78 +341,109 @@ class BreakoutGame {
     
     /** Verificar colisión con la paleta */
     method void checkPaddleCollision() {
+        var int ballY, paddleY;
+        
         if (CollisionDetector.checkBallPaddle(ball, paddle)) {
+            // Rebotar la bola
             do ball.bounceVertical();
+            
+            // CRÍTICO: Alejar la bola de la paddle para evitar que el erase()
+            // borre píxeles de la paddle. Mover la bola arriba de la paddle.
+            let ballY = ball.getY();
+            let paddleY = paddle.getY();
+            
+            // Si la bola está muy cerca de la paddle, separarla
+            if (ballY > (paddleY - 8)) {
+                do ball.setY(paddleY - 8);  // Colocar arriba de la paddle
+            }
         }
         return;
     }
     
-    /** Perder una vida */
-    method void loseLife() {
+    /** Transición de pérdida de vida (estado LOST_LIFE) */
+    /** OPTIMIZADO: evita bucle apretado con wait apropiado */
+    method void loseLifeTransition() {
         let lives = lives - 1;
         
         if (lives > 0) {
-            // Reiniciar pelota
-            do ball.reset(256, 200);
+            // Borrar bola y paddle de posiciones actuales
+            do ball.erase();
+            do paddle.erase();
             
-            // Pequeña pausa
-            do Sys.wait(1000);
+            // Reiniciar posiciones
+            do ball.reset(256, 200);
+            do paddle.reset(226, 230);
+            
+            // Redibujar
+            do ball.draw();
+            do paddle.draw();
+            
+            // WAIT CRITICO: pausa para evitar bucle apretado
+            // y dar feedback visual al jugador
+            do Sys.wait(400);
         } else {
             // Game Over
             let gameOver = true;
-            do GameUI.showGameOver(score);
+            do Screen.clearScreen();  // Limpiar antes de mostrar game over
         }
         
         return;
     }
     
-    /** Dibujar todos los elementos del juego */
-    method void draw() {
-        // Limpiar pantalla
-        do Screen.clearScreen();
+    /** Reiniciar nivel (llamado al empezar a jugar) */
+    method void resetLevel() {
+        // Reiniciar bola y paddle
+        do ball.reset(256, 200);
+        do paddle.reset(226, 230);
         
-        // Dibujar bloques
-        do blockGrid.draw();
+        // Reiniciar bloques
+        do blockGrid.reset();
         
-        // Dibujar paleta
-        do paddle.draw();
-        
-        // Dibujar pelota
-        do ball.draw();
-        
-        // Dibujar UI (puntuación, vidas)
-        do GameUI.drawScore(score);
-        do GameUI.drawLives(lives);
-        do GameUI.drawLevel(level);
+        // Resetear flags
+        let paused = false;
         
         return;
     }
     
-    /** Esperar a que se presione la tecla espacio */
-    method void waitForSpaceKey() {
-        var char key;
-        var boolean waiting;
+    /** Reiniciar juego completo (llamado desde GAME_OVER o VICTORY) */
+    method void resetGame() {
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let gameOver = false;
+        let victory = false;
+        let paused = false;
+        let frame = 0;
+        let tick = 0;
         
-        let waiting = true;
+        do resetLevel();
         
-        while (waiting) {
-            let key = Keyboard.keyPressed();
-            if (key = 32) {  // Espacio
-                let waiting = false;
-            }
-        }
-        
-        do waitForKeyRelease();
         return;
     }
     
-    /** Esperar a que se suelte la tecla */
+    /** Esperar a que se suelte cualquier tecla (NO bloqueante con wait) */
     method void waitForKeyRelease() {
         var char key;
         
+        let key = Keyboard.keyPressed();
         while (~(key = 0)) {
             let key = Keyboard.keyPressed();
+            do Sys.wait(10);  // Pequeño wait para evitar busy-loop
         }
+        
+        return;
+    }
+    
+    /** Mostrar información de depuración (DEBUG mode) */
+    method void showDebugInfo() {
+        // Mostrar en esquina superior derecha
+        do Output.moveCursor(0, 50);
+        do Output.printString("F:");
+        do Output.printInt(frame);
+        
+        do Output.moveCursor(1, 50);
+        do Output.printString("T:");
+        do Output.printInt(tick);
         
         return;
     }

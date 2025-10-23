@@ -1,53 +1,82 @@
 # TODO List - Breakout Game
 
-## Fase 1: Estructura Básica ⬜
-- [ ] Implementar constructor de Main
-- [ ] Implementar constructor de BreakoutGame
-- [ ] Implementar constructor de Paddle
-- [ ] Implementar constructor de Ball
-- [ ] Implementar constructor de Block
-- [ ] Implementar constructor de BlockGrid
-- [ ] Implementar todos los métodos dispose()
+## ✅ OPTIMIZACION DE TIMING COMPLETADA (Octubre 2025)
 
-## Fase 2: Renderizado ⬜
-- [ ] Implementar Paddle.draw()
-- [ ] Implementar Ball.draw()
-- [ ] Implementar Block.draw()
-- [ ] Implementar BlockGrid.draw()
-- [ ] Implementar GameUI.clearScreen()
-- [ ] Implementar GameUI.drawScore()
-- [ ] Implementar GameUI.drawLives()
-- [ ] Implementar GameUI.showStartScreen()
+### Problemas Críticos Resueltos:
+- [x] ✅ **Busy-loop eliminado**: Reemplazado `while(delay<50)` por `Sys.wait(FRAME_WAIT_MS)`
+- [x] ✅ **Frame limiter implementado**: Loop determinista independiente del CPU slider
+- [x] ✅ **Física normalizada**: Update solo cada `UPDATE_EVERY` frames (default: 3)
+- [x] ✅ **Dirty rectangle rendering**: Eliminado `Screen.clearScreen()` del loop principal
+- [x] ✅ **Máquina de estados robusta**: MENU → PLAYING → LOST_LIFE → GAME_OVER/VICTORY
+- [x] ✅ **Transiciones sin bloqueos**: Wait apropiado en pérdida de vida (400ms)
+- [x] ✅ **Modo DEBUG**: Contadores de frame y tick visibles en pantalla
 
-## Fase 3: Movimiento Básico ⬜
-- [ ] Implementar Paddle.moveLeft()
-- [ ] Implementar Paddle.moveRight()
-- [ ] Implementar límites de movimiento de Paddle
-- [ ] Implementar Ball.move()
-- [ ] Implementar velocidad de Ball
-- [ ] Implementar detección de bordes de pantalla para Ball
+### Archivos Modificados:
+- `src/BreakoutGame.jack` - Loop principal reescrito
+- `src/Paddle.jack` - Añadido método reset()
+- `docs/OPTIMIZACION_TIMING.md` - Documentación completa
+- `docs/DIAGRAMA_FLUJO.txt` - Diagrama visual del loop
 
-## Fase 4: Sistema de Colisiones ⬜
-- [ ] Implementar CollisionDetector.rectCollision()
-- [ ] Implementar CollisionDetector.checkBallPaddle()
-- [ ] Implementar CollisionDetector.checkBallBlock()
-- [ ] Implementar CollisionDetector.checkBallWalls()
-- [ ] Implementar Ball.bounceHorizontal()
-- [ ] Implementar Ball.bounceVertical()
-- [ ] Implementar BlockGrid.checkCollision()
+### Parámetros Tunables:
+Ver líneas 47-52 en `BreakoutGame.jack`:
+```jack
+let UPDATE_EVERY = 3;       // Física cada 3 frames
+let FRAME_WAIT_MS = 2;      // 2ms wait por frame
+let DEBUG = false;          // true para debug
+```
 
-## Fase 5: Lógica de Juego ⬜
-- [ ] Implementar sistema de vidas en BreakoutGame
-- [ ] Implementar sistema de puntuación
-- [ ] Implementar detección de pelota fuera de límites (perder vida)
-- [ ] Implementar Ball.reset()
-- [ ] Implementar BlockGrid.allBlocksDestroyed()
-- [ ] Implementar condición de victoria
-- [ ] Implementar condición de game over
-- [ ] Implementar BreakoutGame.run() - loop principal
+---
 
-## Fase 6: Interfaz de Usuario ⬜
-- [ ] Implementar GameUI.showGameOver()
+## Fase 1: Estructura Básica ✅
+- [x] Implementar constructor de Main
+- [x] Implementar constructor de BreakoutGame (OPTIMIZADO)
+- [x] Implementar constructor de Paddle
+- [x] Implementar constructor de Ball
+- [x] Implementar constructor de Block
+- [x] Implementar constructor de BlockGrid
+- [x] Implementar todos los métodos dispose()
+
+## Fase 2: Renderizado ✅
+- [x] Implementar Paddle.draw()
+- [x] Implementar Ball.draw()
+- [x] Implementar Block.draw()
+- [x] Implementar BlockGrid.draw()
+- [x] Implementar GameUI.clearScreen()
+- [x] Implementar GameUI.drawScore()
+- [x] Implementar GameUI.drawLives()
+- [x] Implementar GameUI.showStartScreen()
+
+## Fase 3: Movimiento Básico ✅
+- [x] Implementar Paddle.moveLeft()
+- [x] Implementar Paddle.moveRight()
+- [x] Implementar límites de movimiento de Paddle
+- [x] Implementar Ball.move() (OPTIMIZADO con dirty rectangles)
+- [x] Implementar velocidad de Ball
+- [x] Implementar detección de bordes de pantalla para Ball
+
+## Fase 4: Sistema de Colisiones ✅
+- [x] Implementar CollisionDetector.rectCollision()
+- [x] Implementar CollisionDetector.checkBallPaddle()
+- [x] Implementar CollisionDetector.checkBallBlock()
+- [x] Implementar CollisionDetector.checkBallWalls()
+- [x] Implementar Ball.bounceHorizontal()
+- [x] Implementar Ball.bounceVertical()
+- [x] Implementar BlockGrid.checkCollision()
+
+## Fase 5: Lógica de Juego ✅
+- [x] Implementar sistema de vidas en BreakoutGame
+- [x] Implementar sistema de puntuación
+- [x] Implementar detección de pelota fuera de límites (perder vida)
+- [x] Implementar Ball.reset()
+- [x] Implementar Paddle.reset() (NUEVO)
+- [x] Implementar BlockGrid.allBlocksDestroyed()
+- [x] Implementar condición de victoria
+- [x] Implementar condición de game over
+- [x] Implementar BreakoutGame.run() - loop principal (REESCRITO)
+
+## Fase 6: Interfaz de Usuario ✅
+- [x] Implementar GameUI.showGameOver()
+
 - [ ] Implementar GameUI.showVictory()
 - [ ] Implementar GameUI.showPauseScreen()
 - [ ] Implementar GameUI.drawLevel()

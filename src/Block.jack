@@ -40,22 +40,37 @@ class Block {
             do Screen.setColor(true);
             do Screen.drawRectangle(x, y, x + width, y + height);
             
-            // Dibujar borde para darle profundidad (opcional)
-            do drawBorder();
+            // NOTA: drawBorder() deshabilitado temporalmente por causar
+            // "Illegal line coordinates" cuando los bloques están en bordes
+            // do drawBorder();
         }
         return;
     }
     
     /** Dibujar borde del bloque para efecto visual */
     method void drawBorder() {
+        var int x2, y2;
+        
+        // ✅ CRÍTICO: Calcular coordenadas y validar límites de pantalla
+        let x2 = x + width;
+        let y2 = y + height;
+        
+        // Limitar a pantalla válida (0-511 x, 0-255 y)
+        if (x2 > 511) { let x2 = 511; }
+        if (y2 > 255) { let y2 = 255; }
+        
         // Borde superior e izquierdo (más claro)
         do Screen.setColor(true);
-        do Screen.drawLine(x, y, x + width, y);           // Línea superior
-        do Screen.drawLine(x, y, x, y + height);          // Línea izquierda
         
-        // Borde inferior y derecho (más oscuro - simulado con líneas)
-        do Screen.drawLine(x, y + height, x + width, y + height);  // Línea inferior
-        do Screen.drawLine(x + width, y, x + width, y + height);   // Línea derecha
+        // Solo dibujar si las coordenadas son válidas
+        if ((x > 0) & (x < 511) & (x2 > 0) & (x2 < 511) & (y > 0) & (y < 255)) {
+            do Screen.drawLine(x, y, x2, y);           // Línea superior
+            do Screen.drawLine(x, y, x, y2);          // Línea izquierda
+            
+            // Borde inferior y derecho
+            do Screen.drawLine(x, y2, x2, y2);  // Línea inferior
+            do Screen.drawLine(x2, y, x2, y2);   // Línea derecha
+        }
         
         return;
     }
