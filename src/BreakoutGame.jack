@@ -36,6 +36,8 @@ class BreakoutGame {
     
     // Estados del juego (máquina de estados)
     field int state;             // 0=MENU, 1=PLAYING, 2=LOST_LIFE, 3=GAME_OVER, 4=VICTORY
+    field boolean victoryShown;  // Flag para mostrar victoria solo una vez
+    field boolean gameOverShown; // Flag para mostrar game over solo una vez
     // =========================================
     
     // Cache para HUD (evitar redibujado innecesario)
@@ -62,6 +64,8 @@ class BreakoutGame {
         let frame = 0;
         let tick = 0;
         let state = 0;              // Empezar en MENU
+        let victoryShown = false;   // No mostrado aún
+        let gameOverShown = false;  // No mostrado aún
         
         // Inicializar cache de HUD (para evitar redibujado innecesario)
         let lastDrawnScore = -1;
@@ -136,6 +140,7 @@ class BreakoutGame {
                     let state = 2;            // Transición a LOST_LIFE
                 }
                 if (blockGrid.allBlocksDestroyed()) {
+                    let victoryShown = false; // Reset flag antes de transición
                     let state = 4;            // Transición a VICTORY
                 }
             }
@@ -145,13 +150,19 @@ class BreakoutGame {
                 do loseLifeTransition();      // Maneja pérdida de vida
                 let state = 1;                // Volver a PLAYING (o a GAME_OVER si lives=0)
                 if (gameOver) {
+                    let gameOverShown = false; // Reset flag antes de transición
                     let state = 3;
                 }
             }
             
             // ===== STATE 3: GAME_OVER =====
             if (state = 3) {
-                do GameUI.showGameOver(score);
+                // ✅ Solo mostrar game over en el primer frame de este estado
+                if (~gameOverShown) {
+                    do GameUI.showGameOver(score);
+                    let gameOverShown = true;
+                }
+                
                 let key = Keyboard.keyPressed();
                 if (key = 81) {  // Q para salir
                     let running = false;
@@ -161,13 +172,19 @@ class BreakoutGame {
                     do resetGame();
                     do Screen.clearScreen();
                     do GameUI.showStartScreen();
+                    let gameOverShown = false;  // Reset flag
                     let state = 0;  // Volver al menú
                 }
             }
             
             // ===== STATE 4: VICTORY =====
             if (state = 4) {
-                do GameUI.showVictory(score);
+                // ✅ Solo mostrar victoria en el primer frame de este estado
+                if (~victoryShown) {
+                    do GameUI.showVictory(score);
+                    let victoryShown = true;
+                }
+                
                 let key = Keyboard.keyPressed();
                 if (key = 81) {  // Q para salir
                     let running = false;
@@ -176,6 +193,7 @@ class BreakoutGame {
                     do resetGame();
                     do Screen.clearScreen();
                     do GameUI.showStartScreen();
+                    let victoryShown = false;  // Reset flag
                     let state = 0;
                 }
             }
