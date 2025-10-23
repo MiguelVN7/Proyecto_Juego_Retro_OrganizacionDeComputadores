@@ -4,24 +4,228 @@
 
 class CollisionDetector {
     
+    /** Verificar colisión entre pelota y paleta (AABB vs Circle) */
     function boolean checkBallPaddle(Ball ball, Paddle paddle) {
-        // TODO: Verificar colisión entre pelota y paleta
-        return false;
+        var int ballX, ballY, ballRadius;
+        var int paddleX, paddleY, paddleWidth, paddleHeight;
+        var int ballBottom, ballTop, ballLeft, ballRight;
+        var int paddleLeft, paddleRight, paddleTop, paddleBottom;
+        var boolean collision;
+        
+        // Obtener datos de la pelota
+        let ballX = ball.getX();
+        let ballY = ball.getY();
+        let ballRadius = ball.getRadius();
+        let ballBottom = ball.getBottom();
+        let ballTop = ball.getTop();
+        let ballLeft = ball.getLeft();
+        let ballRight = ball.getRight();
+        
+        // Obtener datos de la paleta
+        let paddleX = paddle.getX();
+        let paddleY = paddle.getY();
+        let paddleWidth = paddle.getWidth();
+        let paddleHeight = paddle.getHeight();
+        let paddleLeft = paddleX;
+        let paddleRight = paddleX + paddleWidth;
+        let paddleTop = paddleY;
+        let paddleBottom = paddleY + paddleHeight;
+        
+        // Verificar si hay solapamiento en ambos ejes
+        let collision = false;
+        
+        // Colisión en X
+        if ((ballRight > paddleLeft) & (ballLeft < paddleRight)) {
+            // Colisión en Y
+            if ((ballBottom > paddleTop) & (ballTop < paddleBottom)) {
+                let collision = true;
+            }
+        }
+        
+        return collision;
     }
     
+    /** Verificar colisión entre pelota y bloque (AABB vs Circle) */
     function boolean checkBallBlock(Ball ball, Block block) {
-        // TODO: Verificar colisión entre pelota y bloque
-        return false;
+        var int ballX, ballY, ballRadius;
+        var int blockX, blockY, blockWidth, blockHeight;
+        var int ballBottom, ballTop, ballLeft, ballRight;
+        var int blockLeft, blockRight, blockTop, blockBottom;
+        var boolean collision;
+        
+        // Solo verificar si el bloque está activo
+        if (~block.isActive()) {
+            return false;
+        }
+        
+        // Obtener datos de la pelota
+        let ballX = ball.getX();
+        let ballY = ball.getY();
+        let ballRadius = ball.getRadius();
+        let ballBottom = ball.getBottom();
+        let ballTop = ball.getTop();
+        let ballLeft = ball.getLeft();
+        let ballRight = ball.getRight();
+        
+        // Obtener datos del bloque
+        let blockX = block.getX();
+        let blockY = block.getY();
+        let blockWidth = block.getWidth();
+        let blockHeight = block.getHeight();
+        let blockLeft = blockX;
+        let blockRight = blockX + blockWidth;
+        let blockTop = blockY;
+        let blockBottom = blockY + blockHeight;
+        
+        // Verificar si hay solapamiento en ambos ejes
+        let collision = false;
+        
+        // Colisión en X
+        if ((ballRight > blockLeft) & (ballLeft < blockRight)) {
+            // Colisión en Y
+            if ((ballBottom > blockTop) & (ballTop < blockBottom)) {
+                let collision = true;
+            }
+        }
+        
+        return collision;
     }
     
+    /** Verificar colisión con paredes de la pantalla */
     function boolean checkBallWalls(Ball ball, int screenWidth, int screenHeight) {
-        // TODO: Verificar colisión con paredes
-        return false;
+        var int ballX, ballY, ballRadius;
+        var boolean collision;
+        
+        let ballX = ball.getX();
+        let ballY = ball.getY();
+        let ballRadius = ball.getRadius();
+        let collision = false;
+        
+        // Verificar pared izquierda
+        if (ballX < ballRadius) {
+            let collision = true;
+        }
+        
+        // Verificar pared derecha
+        if (ballX > (screenWidth - ballRadius)) {
+            let collision = true;
+        }
+        
+        // Verificar pared superior
+        if (ballY < ballRadius) {
+            let collision = true;
+        }
+        
+        // Verificar pared inferior (no es colisión, es perder vida)
+        // if (ballY > (screenHeight - ballRadius)) {
+        //     let collision = true;
+        // }
+        
+        return collision;
     }
     
+    /** Verificar colisión entre dos rectángulos (AABB) */
     function boolean rectCollision(int x1, int y1, int w1, int h1, 
                                    int x2, int y2, int w2, int h2) {
-        // TODO: Verificar colisión entre dos rectángulos
-        return false;
+        var int left1, right1, top1, bottom1;
+        var int left2, right2, top2, bottom2;
+        var boolean collision;
+        
+        // Calcular límites del rectángulo 1
+        let left1 = x1;
+        let right1 = x1 + w1;
+        let top1 = y1;
+        let bottom1 = y1 + h1;
+        
+        // Calcular límites del rectángulo 2
+        let left2 = x2;
+        let right2 = x2 + w2;
+        let top2 = y2;
+        let bottom2 = y2 + h2;
+        
+        // Verificar solapamiento usando AABB (Axis-Aligned Bounding Box)
+        let collision = false;
+        
+        if ((right1 > left2) & (left1 < right2)) {
+            if ((bottom1 > top2) & (top1 < bottom2)) {
+                let collision = true;
+            }
+        }
+        
+        return collision;
+    }
+    
+    /** Verificar colisión entre círculo y rectángulo (útil para física avanzada) */
+    function boolean circleRectCollision(int cx, int cy, int radius,
+                                         int rx, int ry, int rw, int rh) {
+        var int closestX, closestY;
+        var int distanceX, distanceY;
+        var int distanceSquared;
+        var int radiusSquared;
+        var boolean collision;
+        
+        // Encontrar el punto más cercano del rectángulo al círculo
+        let closestX = cx;
+        let closestY = cy;
+        
+        // Limitar X
+        if (cx < rx) {
+            let closestX = rx;
+        }
+        if (cx > (rx + rw)) {
+            let closestX = rx + rw;
+        }
+        
+        // Limitar Y
+        if (cy < ry) {
+            let closestY = ry;
+        }
+        if (cy > (ry + rh)) {
+            let closestY = ry + rh;
+        }
+        
+        // Calcular distancia entre el punto más cercano y el centro del círculo
+        let distanceX = cx - closestX;
+        let distanceY = cy - closestY;
+        
+        // Calcular distancia al cuadrado (evitar raíz cuadrada)
+        let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+        let radiusSquared = radius * radius;
+        
+        // Hay colisión si la distancia es menor que el radio
+        let collision = distanceSquared < radiusSquared;
+        
+        return collision;
+    }
+    
+    /** Verificar si un punto está dentro de un rectángulo */
+    function boolean pointInRect(int px, int py, int rx, int ry, int rw, int rh) {
+        var boolean inside;
+        
+        let inside = false;
+        
+        if ((px > rx) & (px < (rx + rw))) {
+            if ((py > ry) & (py < (ry + rh))) {
+                let inside = true;
+            }
+        }
+        
+        return inside;
+    }
+    
+    /** Verificar si un punto está dentro de un círculo */
+    function boolean pointInCircle(int px, int py, int cx, int cy, int radius) {
+        var int dx, dy, distanceSquared, radiusSquared;
+        var boolean inside;
+        
+        let dx = px - cx;
+        let dy = py - cy;
+        let distanceSquared = (dx * dx) + (dy * dy);
+        let radiusSquared = radius * radius;
+        
+        let inside = distanceSquared < radiusSquared;
+        
+        return inside;
     }
 }
+

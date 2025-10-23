@@ -3,20 +3,262 @@
 // Controla el estado del juego, puntuación, vidas y niveles
 
 class BreakoutGame {
-    // TODO: Definir campos de la clase
+    // Componentes del juego
+    field Paddle paddle;
+    field Ball ball;
+    field BlockGrid blockGrid;
     
+    // Estado del juego
+    field int score;
+    field int lives;
+    field int level;
+    field boolean gameOver;
+    field boolean victory;
+    field boolean paused;
+    field boolean running;
+    
+    // Constantes
+    field int screenWidth;
+    field int screenHeight;
+    
+    /** Constructor - Inicializa el juego */
     constructor BreakoutGame new() {
-        // TODO: Implementar constructor
+        // Configurar dimensiones de pantalla
+        let screenWidth = 512;
+        let screenHeight = 256;
+        
+        // Inicializar estado del juego
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let gameOver = false;
+        let victory = false;
+        let paused = false;
+        let running = true;
+        
+        // Crear componentes del juego
+        let paddle = Paddle.new(226, 230, 60, 8);  // Centro inferior
+        let ball = Ball.new(256, 200, 4);           // Centro arriba de la paleta
+        let blockGrid = BlockGrid.new(5, 10);       // 5 filas, 10 columnas
+        
         return this;
     }
     
+    /** Loop principal del juego */
     method void run() {
-        // TODO: Implementar loop principal del juego
+        var char key;
+        var int delay;
+        
+        // Mostrar pantalla de inicio
+        do GameUI.showStartScreen();
+        do waitForSpaceKey();
+        
+        // Loop principal del juego
+        while (running) {
+            // Leer input del teclado
+            let key = Keyboard.keyPressed();
+            
+            // Procesar input
+            do processInput(key);
+            
+            // Si no está pausado ni terminado, actualizar juego
+            if ((~paused) & (~gameOver) & (~victory)) {
+                do update();
+            }
+            
+            // Pequeño delay para controlar velocidad
+            let delay = 0;
+            while (delay < 50) {
+                let delay = delay + 1;
+            }
+        }
+        
         return;
     }
     
+    /** Procesar entrada del usuario */
+    method void processInput(char key) {
+        // Flecha izquierda (130)
+        if (key = 130) {
+            do paddle.moveLeft();
+        }
+        
+        // Flecha derecha (132)
+        if (key = 132) {
+            do paddle.moveRight();
+        }
+        
+        // Espacio (32) - Pausar/Despausar
+        if (key = 32) {
+            if (~gameOver & ~victory) {
+                let paused = ~paused;
+                if (paused) {
+                    do GameUI.showPauseScreen();
+                }
+                do waitForKeyRelease();
+            }
+        }
+        
+        // Q (81) - Salir
+        if (key = 81) {
+            let running = false;
+        }
+        
+        return;
+    }
+    
+    /** Actualizar estado del juego */
+    method void update() {
+        // Mover la pelota
+        do ball.move();
+        
+        // Verificar colisiones con paredes
+        do checkWallCollisions();
+        
+        // Verificar colisión con la paleta
+        do checkPaddleCollision();
+        
+        // Verificar colisión con bloques
+        do blockGrid.checkCollision(ball);
+        
+        // Verificar si la pelota cayó
+        if (ball.getY() > screenHeight) {
+            do loseLife();
+        }
+        
+        // Verificar victoria (todos los bloques destruidos)
+        if (blockGrid.allBlocksDestroyed()) {
+            let victory = true;
+            do GameUI.showVictory(score);
+        }
+        
+        // Redibujar todo
+        do draw();
+        
+        return;
+    }
+    
+    /** Verificar colisiones con paredes */
+    method void checkWallCollisions() {
+        var int ballX, ballY, ballRadius;
+        
+        let ballX = ball.getX();
+        let ballY = ball.getY();
+        let ballRadius = ball.getRadius();
+        
+        // Pared izquierda
+        if (ballX < ballRadius) {
+            do ball.bounceHorizontal();
+        }
+        
+        // Pared derecha
+        if (ballX > (screenWidth - ballRadius)) {
+            do ball.bounceHorizontal();
+        }
+        
+        // Pared superior
+        if (ballY < ballRadius) {
+            do ball.bounceVertical();
+        }
+        
+        return;
+    }
+    
+    /** Verificar colisión con la paleta */
+    method void checkPaddleCollision() {
+        if (CollisionDetector.checkBallPaddle(ball, paddle)) {
+            do ball.bounceVertical();
+        }
+        return;
+    }
+    
+    /** Perder una vida */
+    method void loseLife() {
+        let lives = lives - 1;
+        
+        if (lives > 0) {
+            // Reiniciar pelota
+            do ball.reset(256, 200);
+            
+            // Pequeña pausa
+            do Sys.wait(1000);
+        } else {
+            // Game Over
+            let gameOver = true;
+            do GameUI.showGameOver(score);
+        }
+        
+        return;
+    }
+    
+    /** Dibujar todos los elementos del juego */
+    method void draw() {
+        // Limpiar pantalla
+        do Screen.clearScreen();
+        
+        // Dibujar bloques
+        do blockGrid.draw();
+        
+        // Dibujar paleta
+        do paddle.draw();
+        
+        // Dibujar pelota
+        do ball.draw();
+        
+        // Dibujar UI (puntuación, vidas)
+        do GameUI.drawScore(score);
+        do GameUI.drawLives(lives);
+        do GameUI.drawLevel(level);
+        
+        return;
+    }
+    
+    /** Esperar a que se presione la tecla espacio */
+    method void waitForSpaceKey() {
+        var char key;
+        var boolean waiting;
+        
+        let waiting = true;
+        
+        while (waiting) {
+            let key = Keyboard.keyPressed();
+            if (key = 32) {  // Espacio
+                let waiting = false;
+            }
+        }
+        
+        do waitForKeyRelease();
+        return;
+    }
+    
+    /** Esperar a que se suelte la tecla */
+    method void waitForKeyRelease() {
+        var char key;
+        
+        while (~(key = 0)) {
+            let key = Keyboard.keyPressed();
+        }
+        
+        return;
+    }
+    
+    /** Actualizar puntuación */
+    method void addScore(int points) {
+        let score = score + points;
+        return;
+    }
+    
+    /** Obtener puntuación actual */
+    method int getScore() {
+        return score;
+    }
+    
+    /** Liberar memoria */
     method void dispose() {
-        // TODO: Implementar liberación de memoria
+        do paddle.dispose();
+        do ball.dispose();
+        do blockGrid.dispose();
+        do Memory.deAlloc(this);
         return;
     }
 }

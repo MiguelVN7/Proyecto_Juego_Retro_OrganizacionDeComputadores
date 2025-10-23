@@ -3,55 +3,172 @@
 // Maneja movimiento, rebotes y detección de colisiones
 
 class Ball {
-    // TODO: Definir campos (posición, velocidad, radio)
+    // Posición de la pelota
+    field int x;
+    field int y;
     
-    constructor Ball new(int x, int y, int radius) {
-        // TODO: Implementar constructor
+    // Radio de la pelota
+    field int radius;
+    
+    // Velocidad de la pelota (componentes X e Y)
+    field int velocityX;
+    field int velocityY;
+    
+    // Velocidad base
+    field int speed;
+    
+    /** Constructor - Crea una nueva pelota */
+    constructor Ball new(int Ax, int Ay, int Aradius) {
+        let x = Ax;
+        let y = Ay;
+        let radius = Aradius;
+        let speed = 3;  // Velocidad base en píxeles
+        
+        // Iniciar con movimiento diagonal hacia arriba-derecha
+        let velocityX = speed;
+        let velocityY = 0 - speed;  // Negativo = hacia arriba
+        
         return this;
     }
     
+    /** Dibujar la pelota en su posición actual */
     method void draw() {
-        // TODO: Dibujar la pelota en pantalla
+        do Screen.setColor(true);  // Color blanco (sólido)
+        do Screen.drawCircle(x, y, radius);
         return;
     }
     
+    /** Borrar la pelota (útil antes de moverla) */
+    method void erase() {
+        do Screen.setColor(false);  // Color negro (fondo)
+        do Screen.drawCircle(x, y, radius);
+        return;
+    }
+    
+    /** Mover la pelota según su velocidad actual */
     method void move() {
-        // TODO: Actualizar posición según velocidad
+        // Borrar posición actual
+        do erase();
+        
+        // Actualizar posición
+        let x = x + velocityX;
+        let y = y + velocityY;
+        
+        // Dibujar en nueva posición
+        do draw();
+        
         return;
     }
     
+    /** Invertir dirección horizontal (rebote izquierda/derecha) */
     method void bounceHorizontal() {
-        // TODO: Invertir dirección horizontal
+        let velocityX = 0 - velocityX;  // Invertir signo
         return;
     }
     
+    /** Invertir dirección vertical (rebote arriba/abajo) */
     method void bounceVertical() {
-        // TODO: Invertir dirección vertical
+        let velocityY = 0 - velocityY;  // Invertir signo
         return;
     }
     
+    /** Obtener posición X de la pelota */
     method int getX() {
-        // TODO: Retornar posición X
-        return 0;
+        return x;
     }
     
+    /** Obtener posición Y de la pelota */
     method int getY() {
-        // TODO: Retornar posición Y
-        return 0;
+        return y;
     }
     
+    /** Obtener radio de la pelota */
     method int getRadius() {
-        // TODO: Retornar radio
-        return 0;
+        return radius;
     }
     
-    method void reset(int x, int y) {
-        // TODO: Reiniciar posición de la pelota
+    /** Obtener velocidad X */
+    method int getVelocityX() {
+        return velocityX;
+    }
+    
+    /** Obtener velocidad Y */
+    method int getVelocityY() {
+        return velocityY;
+    }
+    
+    /** Establecer velocidad X (útil para física avanzada) */
+    method void setVelocityX(int vx) {
+        let velocityX = vx;
         return;
     }
     
+    /** Establecer velocidad Y (útil para física avanzada) */
+    method void setVelocityY(int vy) {
+        let velocityY = vy;
+        return;
+    }
+    
+    /** Reiniciar posición de la pelota */
+    method void reset(int newX, int newY) {
+        // Borrar posición actual
+        do erase();
+        
+        // Establecer nueva posición
+        let x = newX;
+        let y = newY;
+        
+        // Reiniciar velocidad (diagonal hacia arriba-derecha)
+        let velocityX = speed;
+        let velocityY = 0 - speed;
+        
+        // Dibujar en nueva posición
+        do draw();
+        
+        return;
+    }
+    
+    /** Aumentar velocidad (para aumentar dificultad) */
+    method void increaseSpeed() {
+        // Aumentar velocidad en 1 píxel
+        if (velocityX > 0) {
+            let velocityX = velocityX + 1;
+        } else {
+            let velocityX = velocityX - 1;
+        }
+        
+        if (velocityY > 0) {
+            let velocityY = velocityY + 1;
+        } else {
+            let velocityY = velocityY - 1;
+        }
+        
+        return;
+    }
+    
+    /** Obtener límite izquierdo (para colisiones) */
+    method int getLeft() {
+        return x - radius;
+    }
+    
+    /** Obtener límite derecho (para colisiones) */
+    method int getRight() {
+        return x + radius;
+    }
+    
+    /** Obtener límite superior (para colisiones) */
+    method int getTop() {
+        return y - radius;
+    }
+    
+    /** Obtener límite inferior (para colisiones) */
+    method int getBottom() {
+        return y + radius;
+    }
+    
+    /** Liberar memoria */
     method void dispose() {
-        // TODO: Implementar liberación de memoria
+        do Memory.deAlloc(this);
         return;
     }
 }

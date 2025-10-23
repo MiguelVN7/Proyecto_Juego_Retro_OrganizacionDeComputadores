@@ -3,50 +3,122 @@
 // Maneja movimiento horizontal y detección de colisiones
 
 class Paddle {
-    // TODO: Definir campos (posición, dimensiones, velocidad)
+    // Posición de la paleta
+    field int x;
+    field int y;
     
-    constructor Paddle new(int x, int y, int width, int height) {
-        // TODO: Implementar constructor
+    // Dimensiones de la paleta
+    field int width;
+    field int height;
+    
+    // Velocidad de movimiento
+    field int speed;
+    
+    // Límites de la pantalla
+    field int minX;
+    field int maxX;
+    
+    /** Constructor - Crea una nueva paleta */
+    constructor Paddle new(int Ax, int Ay, int Awidth, int Aheight) {
+        let x = Ax;
+        let y = Ay;
+        let width = Awidth;
+        let height = Aheight;
+        let speed = 5;  // Píxeles por movimiento
+        
+        // Configurar límites (la paleta no puede salir de la pantalla)
+        let minX = 0;
+        let maxX = 512 - width;  // 512 es el ancho de la pantalla
+        
         return this;
     }
     
+    /** Dibujar la paleta en su posición actual */
     method void draw() {
-        // TODO: Dibujar la paleta en pantalla
+        do Screen.setColor(true);  // Color blanco (sólido)
+        do Screen.drawRectangle(x, y, x + width, y + height);
         return;
     }
     
+    /** Borrar la paleta (útil antes de moverla) */
+    method void erase() {
+        do Screen.setColor(false);  // Color negro (fondo)
+        do Screen.drawRectangle(x, y, x + width, y + height);
+        return;
+    }
+    
+    /** Mover paleta a la izquierda */
     method void moveLeft() {
-        // TODO: Mover paleta a la izquierda
+        // Borrar posición actual
+        do erase();
+        
+        // Calcular nueva posición
+        if (x > (minX + speed)) {
+            let x = x - speed;
+        } else {
+            let x = minX;  // No pasar el límite izquierdo
+        }
+        
+        // Dibujar en nueva posición
+        do draw();
         return;
     }
     
+    /** Mover paleta a la derecha */
     method void moveRight() {
-        // TODO: Mover paleta a la derecha
+        // Borrar posición actual
+        do erase();
+        
+        // Calcular nueva posición
+        if (x < (maxX - speed)) {
+            let x = x + speed;
+        } else {
+            let x = maxX;  // No pasar el límite derecho
+        }
+        
+        // Dibujar en nueva posición
+        do draw();
         return;
     }
     
+    /** Obtener posición X de la paleta */
     method int getX() {
-        // TODO: Retornar posición X
-        return 0;
+        return x;
     }
     
+    /** Obtener posición Y de la paleta */
     method int getY() {
-        // TODO: Retornar posición Y
-        return 0;
+        return y;
     }
     
+    /** Obtener ancho de la paleta */
     method int getWidth() {
-        // TODO: Retornar ancho
-        return 0;
+        return width;
     }
     
+    /** Obtener alto de la paleta */
     method int getHeight() {
-        // TODO: Retornar alto
-        return 0;
+        return height;
     }
     
+    /** Obtener el centro X de la paleta (útil para física de rebote) */
+    method int getCenterX() {
+        return x + (width / 2);
+    }
+    
+    /** Verificar si un punto está dentro de la paleta */
+    method boolean contains(int px, int py) {
+        if ((px > x) & (px < (x + width))) {
+            if ((py > y) & (py < (y + height))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /** Liberar memoria */
     method void dispose() {
-        // TODO: Implementar liberación de memoria
+        do Memory.deAlloc(this);
         return;
     }
 }

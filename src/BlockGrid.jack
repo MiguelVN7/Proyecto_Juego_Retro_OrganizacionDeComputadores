@@ -3,35 +3,248 @@
 // Controla la creación, renderizado y gestión de todos los bloques
 
 class BlockGrid {
-    // TODO: Definir campos (array de bloques, filas, columnas)
+    // Array de bloques
+    field Array blocks;
     
-    constructor BlockGrid new(int rows, int cols) {
-        // TODO: Implementar constructor y crear bloques
+    // Dimensiones de la cuadrícula
+    field int rows;
+    field int cols;
+    field int totalBlocks;
+    
+    // Dimensiones de cada bloque
+    field int blockWidth;
+    field int blockHeight;
+    
+    // Espaciado entre bloques
+    field int spacing;
+    
+    // Posición inicial de la cuadrícula
+    field int startX;
+    field int startY;
+    
+    // Contador de bloques activos
+    field int activeBlocks;
+    
+    /** Constructor - Crea la cuadrícula de bloques */
+    constructor BlockGrid new(int Arows, int Acols) {
+        var int i, row, col, index;
+        var int blockX, blockY;
+        var Block block;
+        
+        let rows = Arows;
+        let cols = Acols;
+        let totalBlocks = rows * cols;
+        
+        // Configurar dimensiones de bloques
+        let blockWidth = 45;
+        let blockHeight = 10;
+        let spacing = 2;
+        
+        // Posición inicial (centrado en la parte superior)
+        let startX = 10;
+        let startY = 30;
+        
+        // Inicialmente todos los bloques están activos
+        let activeBlocks = totalBlocks;
+        
+        // Crear array de bloques
+        let blocks = Array.new(totalBlocks);
+        
+        // Crear cada bloque y posicionarlo
+        let i = 0;
+        while (i < totalBlocks) {
+            let row = i / cols;  // División entera para obtener fila
+            let col = i - (row * cols);  // Módulo para obtener columna
+            
+            // Calcular posición del bloque
+            let blockX = startX + (col * (blockWidth + spacing));
+            let blockY = startY + (row * (blockHeight + spacing));
+            
+            // Crear bloque con 10 puntos
+            let block = Block.new(blockX, blockY, blockWidth, blockHeight, 10);
+            let blocks[i] = block;
+            
+            let i = i + 1;
+        }
+        
         return this;
     }
     
+    /** Dibujar todos los bloques activos */
     method void draw() {
-        // TODO: Dibujar todos los bloques
+        var int i;
+        var Block block;
+        
+        let i = 0;
+        while (i < totalBlocks) {
+            let block = blocks[i];
+            if (block.isActive()) {
+                do block.draw();
+            }
+            let i = i + 1;
+        }
+        
         return;
     }
     
+    /** Verificar colisión con la pelota y manejar destrucción */
     method void checkCollision(Ball ball) {
-        // TODO: Verificar colisión con cada bloque
+        var int i;
+        var Block block;
+        var boolean collision;
+        
+        let i = 0;
+        while (i < totalBlocks) {
+            let block = blocks[i];
+            
+            // Solo verificar bloques activos
+            if (block.isActive()) {
+                let collision = CollisionDetector.checkBallBlock(ball, block);
+                
+                if (collision) {
+                    // Destruir el bloque
+                    do block.destroy();
+                    let activeBlocks = activeBlocks - 1;
+                    
+                    // Hacer rebotar la pelota
+                    do ball.bounceVertical();
+                    
+                    // TODO: Actualizar puntuación en BreakoutGame
+                    // (esto se puede hacer desde BreakoutGame directamente)
+                    
+                    // Salir del loop después de primera colisión
+                    // (para evitar múltiples colisiones en un frame)
+                    return;
+                }
+            }
+            
+            let i = i + 1;
+        }
+        
         return;
     }
     
+    /** Verificar si todos los bloques fueron destruidos */
     method boolean allBlocksDestroyed() {
-        // TODO: Verificar si se destruyeron todos los bloques
+        return activeBlocks = 0;
+    }
+    
+    /** Obtener número de bloques activos restantes */
+    method int getRemainingBlocks() {
+        return activeBlocks;
+    }
+    
+    /** Obtener número total de bloques */
+    method int getTotalBlocks() {
+        return totalBlocks;
+    }
+    
+    /** Obtener un bloque específico por índice */
+    method Block getBlock(int index) {
+        if ((index > -1) & (index < totalBlocks)) {
+            return blocks[index];
+        }
+        return null;
+    }
+    
+    /** Obtener un bloque por fila y columna */
+    method Block getBlockAt(int row, int col) {
+        var int index;
+        
+        if ((row > -1) & (row < rows)) {
+            if ((col > -1) & (col < cols)) {
+                let index = (row * cols) + col;
+                return blocks[index];
+            }
+        }
+        
+        return null;
+    }
+    
+    /** Reiniciar todos los bloques (para nuevo nivel) */
+    method void reset() {
+        var int i;
+        var Block block;
+        
+        let i = 0;
+        while (i < totalBlocks) {
+            let block = blocks[i];
+            do block.activate();
+            let i = i + 1;
+        }
+        
+        let activeBlocks = totalBlocks;
+        return;
+    }
+    
+    /** Destruir un número específico de bloques aleatorios (para testing) */
+    method void destroyRandom(int count) {
+        var int i, destroyed;
+        var Block block;
+        
+        let destroyed = 0;
+        let i = 0;
+        
+        while ((destroyed < count) & (i < totalBlocks)) {
+            let block = blocks[i];
+            if (block.isActive()) {
+                do block.destroy();
+                let activeBlocks = activeBlocks - 1;
+                let destroyed = destroyed + 1;
+            }
+            let i = i + 1;
+        }
+        
+        return;
+    }
+    
+    /** Obtener número de filas */
+    method int getRows() {
+        return rows;
+    }
+    
+    /** Obtener número de columnas */
+    method int getCols() {
+        return cols;
+    }
+    
+    /** Verificar si hay algún bloque en una posición específica */
+    method boolean hasBlockAt(int x, int y) {
+        var int i;
+        var Block block;
+        
+        let i = 0;
+        while (i < totalBlocks) {
+            let block = blocks[i];
+            if (block.isActive()) {
+                if (block.contains(x, y)) {
+                    return true;
+                }
+            }
+            let i = i + 1;
+        }
+        
         return false;
     }
     
-    method int getRemainingBlocks() {
-        // TODO: Contar bloques activos
-        return 0;
-    }
-    
+    /** Liberar memoria de todos los bloques */
     method void dispose() {
-        // TODO: Implementar liberación de memoria
+        var int i;
+        var Block block;
+        
+        // Liberar cada bloque
+        let i = 0;
+        while (i < totalBlocks) {
+            let block = blocks[i];
+            do block.dispose();
+            let i = i + 1;
+        }
+        
+        // Liberar el array
+        do blocks.dispose();
+        
+        // Liberar este objeto
+        do Memory.deAlloc(this);
         return;
     }
 }

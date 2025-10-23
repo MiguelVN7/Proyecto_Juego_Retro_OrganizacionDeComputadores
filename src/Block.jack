@@ -3,60 +3,164 @@
 // Maneja renderizado y estado del bloque
 
 class Block {
-    // TODO: Definir campos (posición, dimensiones, estado, puntos)
+    // Posición del bloque
+    field int x;
+    field int y;
     
-    constructor Block new(int x, int y, int width, int height, int points) {
-        // TODO: Implementar constructor
+    // Dimensiones del bloque
+    field int width;
+    field int height;
+    
+    // Estado del bloque
+    field boolean active;  // true = visible y colisionable, false = destruido
+    
+    // Puntos que otorga al ser destruido
+    field int points;
+    
+    // Color/tipo del bloque (para variaciones visuales)
+    field int blockType;
+    
+    /** Constructor - Crea un nuevo bloque */
+    constructor Block new(int Ax, int Ay, int Awidth, int Aheight, int Apoints) {
+        let x = Ax;
+        let y = Ay;
+        let width = Awidth;
+        let height = Aheight;
+        let points = Apoints;
+        let active = true;  // El bloque inicia activo
+        let blockType = 1;  // Tipo estándar (puede variarse después)
+        
         return this;
     }
     
+    /** Dibujar el bloque si está activo */
     method void draw() {
-        // TODO: Dibujar el bloque en pantalla
+        if (active) {
+            // Dibujar rectángulo sólido
+            do Screen.setColor(true);
+            do Screen.drawRectangle(x, y, x + width, y + height);
+            
+            // Dibujar borde para darle profundidad (opcional)
+            do drawBorder();
+        }
         return;
     }
     
+    /** Dibujar borde del bloque para efecto visual */
+    method void drawBorder() {
+        // Borde superior e izquierdo (más claro)
+        do Screen.setColor(true);
+        do Screen.drawLine(x, y, x + width, y);           // Línea superior
+        do Screen.drawLine(x, y, x, y + height);          // Línea izquierda
+        
+        // Borde inferior y derecho (más oscuro - simulado con líneas)
+        do Screen.drawLine(x, y + height, x + width, y + height);  // Línea inferior
+        do Screen.drawLine(x + width, y, x + width, y + height);   // Línea derecha
+        
+        return;
+    }
+    
+    /** Borrar el bloque de la pantalla */
     method void erase() {
-        // TODO: Borrar el bloque de la pantalla
+        do Screen.setColor(false);  // Color negro (fondo)
+        do Screen.drawRectangle(x, y, x + width, y + height);
         return;
     }
     
+    /** Verificar si el bloque está activo */
     method boolean isActive() {
-        // TODO: Retornar si el bloque está activo
+        return active;
+    }
+    
+    /** Destruir el bloque (marcarlo como inactivo y borrarlo) */
+    method void destroy() {
+        if (active) {
+            let active = false;
+            do erase();
+        }
+        return;
+    }
+    
+    /** Activar el bloque (útil para reiniciar nivel) */
+    method void activate() {
+        let active = true;
+        do draw();
+        return;
+    }
+    
+    /** Obtener posición X del bloque */
+    method int getX() {
+        return x;
+    }
+    
+    /** Obtener posición Y del bloque */
+    method int getY() {
+        return y;
+    }
+    
+    /** Obtener ancho del bloque */
+    method int getWidth() {
+        return width;
+    }
+    
+    /** Obtener alto del bloque */
+    method int getHeight() {
+        return height;
+    }
+    
+    /** Obtener puntos que otorga el bloque */
+    method int getPoints() {
+        return points;
+    }
+    
+    /** Establecer tipo de bloque (para variaciones visuales futuras) */
+    method void setBlockType(int type) {
+        let blockType = type;
+        return;
+    }
+    
+    /** Obtener tipo de bloque */
+    method int getBlockType() {
+        return blockType;
+    }
+    
+    /** Obtener límite izquierdo (para colisiones) */
+    method int getLeft() {
+        return x;
+    }
+    
+    /** Obtener límite derecho (para colisiones) */
+    method int getRight() {
+        return x + width;
+    }
+    
+    /** Obtener límite superior (para colisiones) */
+    method int getTop() {
+        return y;
+    }
+    
+    /** Obtener límite inferior (para colisiones) */
+    method int getBottom() {
+        return y + height;
+    }
+    
+    /** Verificar si un punto está dentro del bloque */
+    method boolean contains(int px, int py) {
+        if (~active) {
+            return false;
+        }
+        
+        if ((px > x) & (px < (x + width))) {
+            if ((py > y) & (py < (y + height))) {
+                return true;
+            }
+        }
         return false;
     }
     
-    method void destroy() {
-        // TODO: Marcar bloque como destruido
-        return;
-    }
-    
-    method int getX() {
-        // TODO: Retornar posición X
-        return 0;
-    }
-    
-    method int getY() {
-        // TODO: Retornar posición Y
-        return 0;
-    }
-    
-    method int getWidth() {
-        // TODO: Retornar ancho
-        return 0;
-    }
-    
-    method int getHeight() {
-        // TODO: Retornar alto
-        return 0;
-    }
-    
-    method int getPoints() {
-        // TODO: Retornar puntos que otorga
-        return 0;
-    }
-    
+    /** Liberar memoria */
     method void dispose() {
-        // TODO: Implementar liberación de memoria
+        do Memory.deAlloc(this);
         return;
     }
 }

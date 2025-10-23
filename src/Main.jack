@@ -3,8 +3,20 @@
 // Inicializa el juego y controla el loop principal
 
 class Main {
+    
+    /** Punto de entrada del programa */
     function void main() {
-        // TODO: Implementar inicialización del juego
+        var BreakoutGame game;
+        
+        // Crear una nueva instancia del juego
+        let game = BreakoutGame.new();
+        
+        // Ejecutar el loop principal del juego
+        do game.run();
+        
+        // Liberar memoria al terminar
+        do game.dispose();
+        
         return;
     }
 }

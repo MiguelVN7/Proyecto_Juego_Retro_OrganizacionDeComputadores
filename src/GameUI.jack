@@ -4,43 +4,271 @@
 
 class GameUI {
     
+    /** Mostrar puntuación en pantalla */
     function void drawScore(int score) {
-        // TODO: Mostrar puntuación en pantalla
+        var String scoreText;
+        
+        do Output.moveCursor(0, 0);  // Esquina superior izquierda
+        do Output.printString("SCORE: ");
+        do Output.printInt(score);
+        
         return;
     }
     
+    /** Mostrar vidas restantes */
     function void drawLives(int lives) {
-        // TODO: Mostrar vidas restantes
+        var int i;
+        
+        do Output.moveCursor(0, 40);  // Parte superior derecha
+        do Output.printString("LIVES: ");
+        do Output.printInt(lives);
+        
         return;
     }
     
+    /** Mostrar nivel actual */
     function void drawLevel(int level) {
-        // TODO: Mostrar nivel actual
+        do Output.moveCursor(0, 20);  // Centro superior
+        do Output.printString("LEVEL: ");
+        do Output.printInt(level);
+        
         return;
     }
     
+    /** Mostrar pantalla de inicio */
     function void showStartScreen() {
-        // TODO: Mostrar pantalla de inicio
+        do Screen.clearScreen();
+        
+        // Título del juego (centrado: 64-15)/2 = 24
+        do Output.moveCursor(5, 24);
+        do Output.printString("B R E A K O U T");
+        
+        // Línea decorativa
+        do Screen.setColor(true);
+        do Screen.drawRectangle(120, 90, 390, 92);
+        
+        // Instrucciones (centrado: 64-10)/2 = 27)
+        do Output.moveCursor(10, 27);
+        do Output.printString("CONTROLES:");
+        
+        // Lista de controles (centrados)
+        do Output.moveCursor(12, 17);
+        do Output.printString("FLECHA IZQ/DER - Mover paleta");
+        
+        do Output.moveCursor(13, 22);
+        do Output.printString("ESPACIO - Pausar");
+        
+        do Output.moveCursor(14, 27);
+        do Output.printString("Q - Salir");
+        
+        // Objetivo (centrado: 64-28)/2 = 18)
+        do Output.moveCursor(17, 18);
+        do Output.printString("Destruye todos los bloques!");
+        
+        // Mensaje para comenzar (centrado: 64-28)/2 = 18)
+        do Output.moveCursor(20, 18);
+        do Output.printString("Presiona ESPACIO para jugar");
+        
         return;
     }
     
+    /** Mostrar pantalla de game over */
     function void showGameOver(int finalScore) {
-        // TODO: Mostrar pantalla de game over
+        do Screen.clearScreen();
+        
+        // Título (centrado: 64-16)/2 = 24
+        do Output.moveCursor(8, 24);
+        do Output.printString("G A M E  O V E R");
+        
+        // Línea decorativa
+        do Screen.setColor(true);
+        do Screen.drawRectangle(150, 140, 360, 142);
+        
+        // Puntuación final (centrado: 64-18)/2 = 23)
+        do Output.moveCursor(12, 23);
+        do Output.printString("PUNTUACION FINAL: ");
+        do Output.printInt(finalScore);
+        
+        // Mensaje de despedida (centrado: 64-19)/2 = 22)
+        do Output.moveCursor(16, 22);
+        do Output.printString("Gracias por jugar!");
+        
+        // Instrucción (centrado: 64-22)/2 = 21)
+        do Output.moveCursor(18, 21);
+        do Output.printString("Presiona Q para salir");
+        
         return;
     }
     
+    /** Mostrar pantalla de victoria */
     function void showVictory(int finalScore) {
-        // TODO: Mostrar pantalla de victoria
+        do Screen.clearScreen();
+        
+        // Título (centrado: 64-17)/2 = 23)
+        do Output.moveCursor(7, 23);
+        do Output.printString("V I C T O R I A !");
+        
+        // Efecto visual - rectángulos decorativos
+        do Screen.setColor(true);
+        do Screen.drawRectangle(100, 120, 410, 125);
+        do Screen.drawRectangle(100, 130, 410, 135);
+        
+        // Mensaje de felicitación (centrado: 64-13)/2 = 25)
+        do Output.moveCursor(11, 25);
+        do Output.printString("Felicidades!");
+        
+        // Mensaje (centrado: 64-30)/2 = 17)
+        do Output.moveCursor(12, 17);
+        do Output.printString("Destruiste todos los bloques!");
+        
+        // Puntuación final (centrado: 64-12)/2 = 26)
+        do Output.moveCursor(15, 26);
+        do Output.printString("PUNTUACION: ");
+        do Output.printInt(finalScore);
+        
+        // Mensaje de cierre (centrado: 64-22)/2 = 21)
+        do Output.moveCursor(19, 21);
+        do Output.printString("Presiona Q para salir");
+        
         return;
     }
     
+    /** Mostrar pantalla de pausa */
     function void showPauseScreen() {
-        // TODO: Mostrar pantalla de pausa
+        var int centerX, centerY;
+        var int boxX1, boxY1, boxX2, boxY2;
+        
+        // Crear un cuadro en el centro
+        let boxX1 = 180;
+        let boxY1 = 100;
+        let boxX2 = 332;
+        let boxY2 = 156;
+        
+        // Dibujar cuadro de pausa (fondo negro)
+        do Screen.setColor(false);
+        do Screen.drawRectangle(boxX1, boxY1, boxX2, boxY2);
+        
+        // Dibujar borde del cuadro
+        do Screen.setColor(true);
+        do Screen.drawRectangle(boxX1, boxY1, boxX2, boxY1 + 2);     // Superior
+        do Screen.drawRectangle(boxX1, boxY2 - 2, boxX2, boxY2);     // Inferior
+        do Screen.drawRectangle(boxX1, boxY1, boxX1 + 2, boxY2);     // Izquierdo
+        do Screen.drawRectangle(boxX2 - 2, boxY1, boxX2, boxY2);     // Derecho
+        
+        // Texto de pausa (centrado: 64-9)/2 = 27)
+        do Output.moveCursor(10, 27);
+        do Output.printString("P A U S A");
+        
+        // Instrucción (centrado: 64-17)/2 = 23)
+        do Output.moveCursor(13, 23);
+        do Output.printString("Presiona ESPACIO");
+        
+        // Segunda línea (centrado: 64-14)/2 = 25)
+        do Output.moveCursor(14, 25);
+        do Output.printString("para continuar");
+        
         return;
     }
     
+    /** Limpiar la pantalla completamente */
     function void clearScreen() {
-        // TODO: Limpiar la pantalla
+        do Screen.clearScreen();
+        return;
+    }
+    
+    /** Dibujar borde alrededor del área de juego */
+    function void drawGameBorder() {
+        do Screen.setColor(true);
+        
+        // Borde superior (ya se usa para el HUD, no dibujar)
+        // do Screen.drawRectangle(0, 0, 511, 2);
+        
+        // Borde izquierdo
+        do Screen.drawRectangle(0, 0, 2, 255);
+        
+        // Borde derecho
+        do Screen.drawRectangle(509, 0, 511, 255);
+        
+        // No dibujar borde inferior (la pelota debe caer)
+        
+        return;
+    }
+    
+    /** Mostrar mensaje temporal en el centro */
+    function void showMessage(String message) {
+        do Output.moveCursor(12, 20);
+        do Output.printString(message);
+        return;
+    }
+    
+    /** Dibujar barra de progreso (bloques destruidos) */
+    function void drawProgress(int current, int total) {
+        var int percentage;
+        var int barWidth;
+        var int barX, barY;
+        
+        let barX = 200;
+        let barY = 245;
+        let barWidth = 100;
+        
+        // Calcular porcentaje (evitar división por cero)
+        if (total > 0) {
+            let percentage = (current * barWidth) / total;
+        } else {
+            let percentage = 0;
+        }
+        
+        // Dibujar borde de la barra
+        do Screen.setColor(true);
+        do Screen.drawRectangle(barX - 2, barY - 2, barX + barWidth + 2, barY + 7);
+        
+        // Dibujar fondo (negro)
+        do Screen.setColor(false);
+        do Screen.drawRectangle(barX, barY, barX + barWidth, barY + 5);
+        
+        // Dibujar progreso (blanco)
+        do Screen.setColor(true);
+        do Screen.drawRectangle(barX, barY, barX + percentage, barY + 5);
+        
+        return;
+    }
+    
+    /** Dibujar contador de FPS o debug info (opcional) */
+    function void drawDebugInfo(int value) {
+        do Output.moveCursor(22, 0);
+        do Output.printString("DEBUG: ");
+        do Output.printInt(value);
+        return;
+    }
+    
+    /** Dibujar línea separadora horizontal */
+    function void drawHorizontalLine(int y) {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(0, y, 511, y + 1);
+        return;
+    }
+    
+    /** Dibujar cuadrícula de fondo (decorativo - opcional) */
+    function void drawBackgroundGrid() {
+        var int i;
+        
+        do Screen.setColor(true);
+        
+        // Líneas verticales
+        let i = 0;
+        while (i < 512) {
+            do Screen.drawLine(i, 20, i, 255);
+            let i = i + 64;
+        }
+        
+        // Líneas horizontales
+        let i = 20;
+        while (i < 256) {
+            do Screen.drawLine(0, i, 511, i);
+            let i = i + 32;
+        }
+        
         return;
     }
 }
+
