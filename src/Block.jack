@@ -1,0 +1,62 @@
+// Block.jack
+// Representa un bloque individual que debe ser destruido
+// Maneja renderizado y estado del bloque
+
+class Block {
+    // TODO: Definir campos (posición, dimensiones, estado, puntos)
+    
+    constructor Block new(int x, int y, int width, int height, int points) {
+        // TODO: Implementar constructor
+        return this;
+    }
+    
+    method void draw() {
+        // TODO: Dibujar el bloque en pantalla
+        return;
+    }
+    
+    method void erase() {
+        // TODO: Borrar el bloque de la pantalla
+        return;
+    }
+    
+    method boolean isActive() {
+        // TODO: Retornar si el bloque está activo
+        return false;
+    }
+    
+    method void destroy() {
+        // TODO: Marcar bloque como destruido
+        return;
+    }
+    
+    method int getX() {
+        // TODO: Retornar posición X
+        return 0;
+    }
+    
+    method int getY() {
+        // TODO: Retornar posición Y
+        return 0;
+    }
+    
+    method int getWidth() {
+        // TODO: Retornar ancho
+        return 0;
+    }
+    
+    method int getHeight() {
+        // TODO: Retornar alto
+        return 0;
+    }
+    
+    method int getPoints() {
+        // TODO: Retornar puntos que otorga
+        return 0;
+    }
+    
+    method void dispose() {
+        // TODO: Implementar liberación de memoria
+        return;
+    }
+}

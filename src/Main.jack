@@ -1,0 +1,10 @@
+// Main.jack
+// Punto de entrada principal del juego Breakout
+// Inicializa el juego y controla el loop principal
+
+class Main {
+    function void main() {
+        // TODO: Implementar inicialización del juego
+        return;
+    }
+}

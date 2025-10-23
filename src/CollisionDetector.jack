@@ -1,0 +1,27 @@
+// CollisionDetector.jack
+// Clase utilitaria para detección de colisiones
+// Contiene funciones estáticas para verificar colisiones
+
+class CollisionDetector {
+    
+    function boolean checkBallPaddle(Ball ball, Paddle paddle) {
+        // TODO: Verificar colisión entre pelota y paleta
+        return false;
+    }
+    
+    function boolean checkBallBlock(Ball ball, Block block) {
+        // TODO: Verificar colisión entre pelota y bloque
+        return false;
+    }
+    
+    function boolean checkBallWalls(Ball ball, int screenWidth, int screenHeight) {
+        // TODO: Verificar colisión con paredes
+        return false;
+    }
+    
+    function boolean rectCollision(int x1, int y1, int w1, int h1, 
+                                   int x2, int y2, int w2, int h2) {
+        // TODO: Verificar colisión entre dos rectángulos
+        return false;
+    }
+}

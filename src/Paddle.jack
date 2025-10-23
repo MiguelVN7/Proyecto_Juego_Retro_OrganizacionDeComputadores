@@ -1,0 +1,52 @@
+// Paddle.jack
+// Representa la paleta controlada por el jugador
+// Maneja movimiento horizontal y detección de colisiones
+
+class Paddle {
+    // TODO: Definir campos (posición, dimensiones, velocidad)
+    
+    constructor Paddle new(int x, int y, int width, int height) {
+        // TODO: Implementar constructor
+        return this;
+    }
+    
+    method void draw() {
+        // TODO: Dibujar la paleta en pantalla
+        return;
+    }
+    
+    method void moveLeft() {
+        // TODO: Mover paleta a la izquierda
+        return;
+    }
+    
+    method void moveRight() {
+        // TODO: Mover paleta a la derecha
+        return;
+    }
+    
+    method int getX() {
+        // TODO: Retornar posición X
+        return 0;
+    }
+    
+    method int getY() {
+        // TODO: Retornar posición Y
+        return 0;
+    }
+    
+    method int getWidth() {
+        // TODO: Retornar ancho
+        return 0;
+    }
+    
+    method int getHeight() {
+        // TODO: Retornar alto
+        return 0;
+    }
+    
+    method void dispose() {
+        // TODO: Implementar liberación de memoria
+        return;
+    }
+}

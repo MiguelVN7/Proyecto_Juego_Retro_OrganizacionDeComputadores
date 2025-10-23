@@ -1,0 +1,57 @@
+// Ball.jack
+// Representa la pelota del juego
+// Maneja movimiento, rebotes y detección de colisiones
+
+class Ball {
+    // TODO: Definir campos (posición, velocidad, radio)
+    
+    constructor Ball new(int x, int y, int radius) {
+        // TODO: Implementar constructor
+        return this;
+    }
+    
+    method void draw() {
+        // TODO: Dibujar la pelota en pantalla
+        return;
+    }
+    
+    method void move() {
+        // TODO: Actualizar posición según velocidad
+        return;
+    }
+    
+    method void bounceHorizontal() {
+        // TODO: Invertir dirección horizontal
+        return;
+    }
+    
+    method void bounceVertical() {
+        // TODO: Invertir dirección vertical
+        return;
+    }
+    
+    method int getX() {
+        // TODO: Retornar posición X
+        return 0;
+    }
+    
+    method int getY() {
+        // TODO: Retornar posición Y
+        return 0;
+    }
+    
+    method int getRadius() {
+        // TODO: Retornar radio
+        return 0;
+    }
+    
+    method void reset(int x, int y) {
+        // TODO: Reiniciar posición de la pelota
+        return;
+    }
+    
+    method void dispose() {
+        // TODO: Implementar liberación de memoria
+        return;
+    }
+}

@@ -1,0 +1,46 @@
+// GameUI.jack
+// Maneja la interfaz de usuario del juego
+// Muestra puntuación, vidas, mensajes y pantallas
+
+class GameUI {
+    
+    function void drawScore(int score) {
+        // TODO: Mostrar puntuación en pantalla
+        return;
+    }
+    
+    function void drawLives(int lives) {
+        // TODO: Mostrar vidas restantes
+        return;
+    }
+    
+    function void drawLevel(int level) {
+        // TODO: Mostrar nivel actual
+        return;
+    }
+    
+    function void showStartScreen() {
+        // TODO: Mostrar pantalla de inicio
+        return;
+    }
+    
+    function void showGameOver(int finalScore) {
+        // TODO: Mostrar pantalla de game over
+        return;
+    }
+    
+    function void showVictory(int finalScore) {
+        // TODO: Mostrar pantalla de victoria
+        return;
+    }
+    
+    function void showPauseScreen() {
+        // TODO: Mostrar pantalla de pausa
+        return;
+    }
+    
+    function void clearScreen() {
+        // TODO: Limpiar la pantalla
+        return;
+    }
+}

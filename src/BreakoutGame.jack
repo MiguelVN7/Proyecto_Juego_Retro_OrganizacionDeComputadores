@@ -1,0 +1,22 @@
+// BreakoutGame.jack
+// Clase principal del juego que maneja la lógica general
+// Controla el estado del juego, puntuación, vidas y niveles
+
+class BreakoutGame {
+    // TODO: Definir campos de la clase
+    
+    constructor BreakoutGame new() {
+        // TODO: Implementar constructor
+        return this;
+    }
+    
+    method void run() {
+        // TODO: Implementar loop principal del juego
+        return;
+    }
+    
+    method void dispose() {
+        // TODO: Implementar liberación de memoria
+        return;
+    }
+}

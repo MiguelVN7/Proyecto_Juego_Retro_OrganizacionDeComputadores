@@ -1,0 +1,37 @@
+// BlockGrid.jack
+// Maneja la cuadrícula de bloques
+// Controla la creación, renderizado y gestión de todos los bloques
+
+class BlockGrid {
+    // TODO: Definir campos (array de bloques, filas, columnas)
+    
+    constructor BlockGrid new(int rows, int cols) {
+        // TODO: Implementar constructor y crear bloques
+        return this;
+    }
+    
+    method void draw() {
+        // TODO: Dibujar todos los bloques
+        return;
+    }
+    
+    method void checkCollision(Ball ball) {
+        // TODO: Verificar colisión con cada bloque
+        return;
+    }
+    
+    method boolean allBlocksDestroyed() {
+        // TODO: Verificar si se destruyeron todos los bloques
+        return false;
+    }
+    
+    method int getRemainingBlocks() {
+        // TODO: Contar bloques activos
+        return 0;
+    }
+    
+    method void dispose() {
+        // TODO: Implementar liberación de memoria
+        return;
+    }
+}
