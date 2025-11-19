@@ -2,14 +2,14 @@
 
 Implementación del clásico juego arcade **Breakout** desarrollada en lenguaje Jack para la plataforma Nand2Tetris.
 
-## Optimización del Loop de Juego
-
-Este proyecto incorpora un **loop de juego determinista** que se comporta de forma estable independientemente de la posición del speed slider del CPU/VM Emulator.
-
 ## Nota Importante
 
 El juego se puede compilar usando el Software en línea de Nand2Tetris, específicamente el jack compiler, ya luego se puede correr ahí mismo dándole a la opción de run, con el VM EMulator.
 Adicionalmente, dentro del emulador, para que el juego funcione bien es necesario deslizar la barra de velocidad de la simulación para ponerla en "fast" (del todo a la derecha).
+
+## Optimización del Loop de Juego
+
+Este proyecto incorpora un **loop de juego determinista** que se comporta de forma estable.
 
 ### Mejoras clave
 
