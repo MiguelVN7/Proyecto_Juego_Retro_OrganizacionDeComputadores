@@ -21,23 +21,20 @@ class BreakoutGame {
     // Constantes
     field int screenWidth;
     field int screenHeight;
+    field int MAX_LEVELS;
     
-    // ========== PARAMETROS TUNABLES ==========
-    // Ajustar estos valores para cambiar la velocidad del juego
-    // independientemente del speed slider del CPU Emulator
-    
-    field int UPDATE_EVERY;      // Actualizar física cada N frames (2-4 recomendado)
-    field int FRAME_WAIT_MS;     // Milisegundos de espera por frame (1-3 recomendado)
+    // ========== PARAMETROS TUNEABLES ==========
+    field int FRAME_WAIT_MS;     // Milisegundos de espera por frame
     field boolean DEBUG;         // true para mostrar contadores en pantalla
     
     // Contadores de timing
     field int frame;             // Contador global de frames
-    field int tick;              // Contador de actualizaciones de física
     
     // Estados del juego (máquina de estados)
-    field int state;             // 0=MENU, 1=PLAYING, 2=LOST_LIFE, 3=GAME_OVER, 4=VICTORY
+    field int state;             // 0=MENU, 1=PLAYING, 2=LOST_LIFE, 3=GAME_OVER, 4=VICTORY, 5=LEVEL_COMPLETE
     field boolean victoryShown;  // Flag para mostrar victoria solo una vez
     field boolean gameOverShown; // Flag para mostrar game over solo una vez
+    field boolean levelCompleteShown; // Flag para nivel completado
     // =========================================
     
     // Cache para HUD (evitar redibujado innecesario)
@@ -50,22 +47,21 @@ class BreakoutGame {
         // Configurar dimensiones de pantalla
         let screenWidth = 512;
         let screenHeight = 256;
+        let MAX_LEVELS = 2;
         
         // ========== CONFIGURAR PARAMETROS TUNABLES ==========
-        // Ajustar estos valores según comportamiento del emulador:
-        // - Si el juego va muy rápido: aumentar UPDATE_EVERY o FRAME_WAIT_MS
-        // - Si el juego va muy lento: reducir UPDATE_EVERY o FRAME_WAIT_MS
-        let UPDATE_EVERY = 3;       // Física se actualiza cada 3 frames
-        let FRAME_WAIT_MS = 2;      // 2ms de espera por frame (evita busy-loop)
-        let DEBUG = false;          // Cambiar a true para ver contadores
+        // FRAME_WAIT_MS aumentado para evitar busy-loop y normalizar velocidad.
+        // 10-15ms es un buen balance (60-100 FPS aprox).
+        let FRAME_WAIT_MS = 15;     
+        let DEBUG = false;          
         // ====================================================
         
         // Inicializar contadores
         let frame = 0;
-        let tick = 0;
         let state = 0;              // Empezar en MENU
         let victoryShown = false;   // No mostrado aún
         let gameOverShown = false;  // No mostrado aún
+        let levelCompleteShown = false;
         
         // Inicializar cache de HUD (para evitar redibujado innecesario)
         let lastDrawnScore = -1;
@@ -104,7 +100,7 @@ class BreakoutGame {
             if (state = 0) {
                 let key = Keyboard.keyPressed();
                 if (key = 32) {  // Espacio presionado
-                    do resetLevel();          // Inicializar nivel
+                    do resetGame();           // Reiniciar juego completo
                     do initialDraw();         // Dibujar todo (una sola vez)
                     let state = 1;            // Transición a PLAYING
                     do waitForKeyRelease();   // Evitar input repetido
@@ -118,14 +114,11 @@ class BreakoutGame {
             if (state = 1) {
                 let key = Keyboard.keyPressed();
                 
-                // Procesar input del jugador
+                // Procesar input del jugador (Mueve la paleta)
                 do processInput(key);
                 
-                // UPDATE de física solo cada UPDATE_EVERY frames (normalización)
-                if ((frame / UPDATE_EVERY) * UPDATE_EVERY = frame) {
-                    do updatePhysics();       // Mover bola, detectar colisiones
-                    let tick = tick + 1;      // Incrementar contador de ticks
-                }
+                // UPDATE de física CADA FRAME (Sincronizado con input)
+                do updatePhysics();
                 
                 // RENDER parcial: solo borra y redibuja lo que cambió
                 do renderFrame();
@@ -140,8 +133,13 @@ class BreakoutGame {
                     let state = 2;            // Transición a LOST_LIFE
                 }
                 if (blockGrid.allBlocksDestroyed()) {
-                    let victoryShown = false; // Reset flag antes de transición
-                    let state = 4;            // Transición a VICTORY
+                    if (level < MAX_LEVELS) {
+                        let levelCompleteShown = false;
+                        let state = 5;        // Transición a LEVEL_COMPLETE
+                    } else {
+                        let victoryShown = false; 
+                        let state = 4;        // Transición a VICTORY
+                    }
                 }
             }
             
@@ -164,16 +162,18 @@ class BreakoutGame {
                 }
                 
                 let key = Keyboard.keyPressed();
-                if (key = 81) {  // Q para salir
-                    let running = false;
-                }
-                // Opcionalmente: Enter (131) para reiniciar
-                if (key = 128) {  // Enter
-                    do resetGame();
+                if (key = 81) {  // Q para VOLVER AL MENU
                     do Screen.clearScreen();
                     do GameUI.showStartScreen();
-                    let gameOverShown = false;  // Reset flag
-                    let state = 0;  // Volver al menú
+                    let state = 0;
+                    do waitForKeyRelease();
+                }
+                // Opcionalmente: Enter (128) para reiniciar
+                if (key = 128) {  // Enter
+                    do resetGame();
+                    do initialDraw(); // Necesario porque vamos a PLAYING directo
+                    let state = 1;    // Volver a PLAYING
+                    do waitForKeyRelease();
                 }
             }
             
@@ -186,23 +186,46 @@ class BreakoutGame {
                 }
                 
                 let key = Keyboard.keyPressed();
-                if (key = 81) {  // Q para salir
-                    let running = false;
+                if (key = 81) {  // Q para VOLVER AL MENU
+                    do Screen.clearScreen();
+                    do GameUI.showStartScreen();
+                    let state = 0;
+                    do waitForKeyRelease();
                 }
                 if (key = 128) {  // Enter para reiniciar
                     do resetGame();
+                    do initialDraw();
+                    let state = 1;
+                    do waitForKeyRelease();
+                }
+            }
+            
+            // ===== STATE 5: LEVEL_COMPLETE =====
+            if (state = 5) {
+                if (~levelCompleteShown) {
+                    do GameUI.showLevelComplete(score, level + 1);
+                    let levelCompleteShown = true;
+                }
+                
+                let key = Keyboard.keyPressed();
+                if (key = 32) { // ESPACIO para Siguiente Nivel
+                    do startNextLevel();
+                    do initialDraw();
+                    let state = 1; // PLAYING
+                    do waitForKeyRelease();
+                }
+                if (key = 81) { // Q para VOLVER AL MENU
                     do Screen.clearScreen();
                     do GameUI.showStartScreen();
-                    let victoryShown = false;  // Reset flag
                     let state = 0;
+                    do waitForKeyRelease();
                 }
             }
             
             // Incrementar contador de frames
             let frame = frame + 1;
             
-            // FRAME LIMITER: pequeño wait para desacoplar del CPU slider
-            // Este wait hace que el juego sea determinista
+            // FRAME LIMITER: Wait crucial para mantener velocidad constante
             do Sys.wait(FRAME_WAIT_MS);
         }
         
@@ -226,11 +249,18 @@ class BreakoutGame {
             let paused = ~paused;
             if (paused) {
                 do GameUI.showPauseScreen();
+            } else {
+                do GameUI.hidePauseScreen();
+                // Redibujar la bola por si estaba detrás del menú
+                do ball.draw();
             }
             do waitForKeyRelease();
         }
         
-        // Q (81) - Salir del juego
+        // Q (81) - Salir del juego (durante el juego va a Game Over o Menu?)
+        // Estandar Breakout: Q en juego sale al menu o cierra.
+        // Vamos a hacer que salga del juego (running=false) como antes para consistencia
+        // o al menu. "Salir del juego" suele ser Quit App.
         if (key = 81) {
             let running = false;
         }
@@ -239,7 +269,6 @@ class BreakoutGame {
     }
     
     /** Actualizar física del juego (movimiento y colisiones) */
-    /** SEPARADO del render para desacoplar lógica de dibujo */
     method void updatePhysics() {
         var int earnedPoints;
         
@@ -267,7 +296,6 @@ class BreakoutGame {
     }
     
     /** Renderizar frame actual (OPTIMIZADO: solo dibuja cambios) */
-    /** NO hace clearScreen() - usa dirty rectangles */
     method void renderFrame() {
         // La bola y el paddle ya se borran/redibujan en sus métodos move()
         // Solo redibujar el HUD si cambió (OPTIMIZACIÓN CRÍTICA)
@@ -299,28 +327,22 @@ class BreakoutGame {
         return;
     }
     
-    /** Dibujar HUD (puntuación, vidas, nivel) - FORZADO */
-    method void drawHUD() {
-        // Esta versión SIEMPRE dibuja (para initialDraw())
-        do GameUI.drawScore(score);
-        do GameUI.drawLives(lives);
-        do GameUI.drawLevel(level);
-        
-        // Actualizar cache
-        let lastDrawnScore = score;
-        let lastDrawnLives = lives;
-        let lastDrawnLevel = level;
-        
-        return;
-    }
-    
     /** Dibujo inicial completo (solo se llama una vez al iniciar nivel) */
     method void initialDraw() {
         do Screen.clearScreen();      // Limpiar pantalla (solo una vez)
+        
+        do GameUI.drawHUDLabels();    // Dibujar etiquetas estáticas una vez
+        
+        // Resetear cache para asegurar dibujo
+        let lastDrawnScore = -1; 
+        let lastDrawnLives = -1;
+        let lastDrawnLevel = -1;
+        do drawHUDIfChanged();        // Forzar dibujo de valores
+        
         do blockGrid.draw();          // Dibujar bloques
         do paddle.draw();             // Dibujar paleta
         do ball.draw();               // Dibujar bola
-        do drawHUD();                 // Dibujar HUD
+        
         return;
     }
     
@@ -359,27 +381,26 @@ class BreakoutGame {
     
     /** Verificar colisión con la paleta */
     method void checkPaddleCollision() {
-        var int ballY, paddleY;
+        var int ballY, paddleY, ballRadius;
         
         if (CollisionDetector.checkBallPaddle(ball, paddle)) {
             // Rebotar la bola
             do ball.bounceVertical();
             
-            // CRÍTICO: Alejar la bola de la paddle para evitar que el erase()
-            // borre píxeles de la paddle. Mover la bola arriba de la paddle.
+            // CRÍTICO: Corrección precisa de posición
             let ballY = ball.getY();
             let paddleY = paddle.getY();
+            let ballRadius = ball.getRadius();
             
-            // Si la bola está muy cerca de la paddle, separarla
-            if (ballY > (paddleY - 8)) {
-                do ball.setY(paddleY - 8);  // Colocar arriba de la paddle
+            // Colocar la bola EXACTAMENTE encima de la paleta
+            if ((ballY + ballRadius) > paddleY) {
+                do ball.setY(paddleY - ballRadius - 2); 
             }
         }
         return;
     }
     
     /** Transición de pérdida de vida (estado LOST_LIFE) */
-    /** OPTIMIZADO: evita bucle apretado con wait apropiado */
     method void loseLifeTransition() {
         let lives = lives - 1;
         
@@ -397,8 +418,7 @@ class BreakoutGame {
             do paddle.draw();
             
             // WAIT CRITICO: pausa para evitar bucle apretado
-            // y dar feedback visual al jugador
-            do Sys.wait(400);
+            do Sys.wait(1000); // 1 segundo de espera
         } else {
             // Game Over
             let gameOver = true;
@@ -408,22 +428,35 @@ class BreakoutGame {
         return;
     }
     
-    /** Reiniciar nivel (llamado al empezar a jugar) */
+    /** Reiniciar nivel actual */
     method void resetLevel() {
         // Reiniciar bola y paddle
         do ball.reset(256, 200);
         do paddle.reset(226, 230);
         
-        // Reiniciar bloques
-        do blockGrid.reset();
+        // Configurar bloques para el nivel actual
+        do blockGrid.reset(level);
         
         // Resetear flags
         let paused = false;
         
         return;
     }
+
+    /** Iniciar siguiente nivel */
+    method void startNextLevel() {
+        let level = level + 1;
+        
+        // Aumentar velocidad si es nivel 2
+        if (level = 2) {
+            do ball.increaseSpeed();
+        }
+        
+        do resetLevel();
+        return;
+    }
     
-    /** Reiniciar juego completo (llamado desde GAME_OVER o VICTORY) */
+    /** Reiniciar juego completo */
     method void resetGame() {
         let score = 0;
         let lives = 3;
@@ -432,7 +465,15 @@ class BreakoutGame {
         let victory = false;
         let paused = false;
         let frame = 0;
-        let tick = 0;
+        
+        // Resetear velocidad de la bola (crear nueva o resetear speed)
+        // Como Ball no tiene resetSpeed(), asumimos que reset() la pone default
+        // Pero reset() solo pone velocidad base. Si increaseSpeed modificó velocityX/Y,
+        // reset() las vuelve a poner en 'speed'. 'speed' es campo de Ball.
+        // Deberíamos asegurarnos que Ball vuelva a estado base.
+        // En Ball.jack: reset() usa 'speed'. 'speed' es inicializado en constructor.
+        // increaseSpeed aumenta velocityX/Y pero no 'speed'.
+        // Asi que reset() en Ball resetea la velocidad. Perfecto.
         
         do resetLevel();
         
@@ -458,23 +499,7 @@ class BreakoutGame {
         do Output.moveCursor(0, 50);
         do Output.printString("F:");
         do Output.printInt(frame);
-        
-        do Output.moveCursor(1, 50);
-        do Output.printString("T:");
-        do Output.printInt(tick);
-        
         return;
-    }
-    
-    /** Actualizar puntuación */
-    method void addScore(int points) {
-        let score = score + points;
-        return;
-    }
-    
-    /** Obtener puntuación actual */
-    method int getScore() {
-        return score;
     }
     
     /** Liberar memoria */

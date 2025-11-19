@@ -5,43 +5,62 @@
 
 class GameUI {
     
-    /** Mostrar puntuación en pantalla */
+    /** Dibujar etiquetas estáticas del HUD (para evitar leaks de Strings en el loop) */
+    function void drawHUDLabels() {
+        do Output.moveCursor(0, 0);
+        do Output.printString("SCORE:");
+        
+        do Output.moveCursor(0, 20);
+        do Output.printString("LEVEL:");
+        
+        do Output.moveCursor(0, 40);
+        do Output.printString("LIVES:");
+        
+        return;
+    }
+
+    /** Mostrar puntuación en pantalla (SOLO VALOR) */
     function void drawScore(int score) {
-        // Limpiar área del score primero (borrar texto anterior)
+        // Limpiar solo el área del número
         do Screen.setColor(false);  // Negro
-        do Screen.drawRectangle(0, 0, 120, 15);  // Borrar área del score
+        // "SCORE:" ocupa ~6 chars. Empezar borrado un poco después.
+        // 6 chars * 8 pixels = 48 pixels. Borramos desde 50 hasta 100.
+        do Screen.drawRectangle(50, 0, 100, 15);
         
         // Dibujar nuevo score
-        do Output.moveCursor(0, 0);  // Esquina superior izquierda
-        do Output.printString("SCORE: ");
+        do Screen.setColor(true);
+        do Output.moveCursor(0, 7);  // Despues de "SCORE:"
         do Output.printInt(score);
         
         return;
     }
     
-    /** Mostrar vidas restantes */
+    /** Mostrar vidas restantes (SOLO VALOR) */
     function void drawLives(int lives) {
-        // Limpiar área de lives primero
-        do Screen.setColor(false);  // Negro
-        do Screen.drawRectangle(320, 0, 450, 15);  // Borrar área de lives
+        // Limpiar solo el área del número
+        do Screen.setColor(false);
+        // "LIVES:" ocupa ~6 chars. Offset 40 chars * 8 = 320 pixels.
+        // Texto termina en 320 + 48 = 368. Borrar desde 370.
+        do Screen.drawRectangle(370, 0, 400, 15);
         
         // Dibujar nuevas lives
-        do Output.moveCursor(0, 40);  // Parte superior derecha
-        do Output.printString("LIVES: ");
+        do Screen.setColor(true);
+        do Output.moveCursor(0, 47);  // Despues de "LIVES:" (40 + 7)
         do Output.printInt(lives);
         
         return;
     }
     
-    /** Mostrar nivel actual */
+    /** Mostrar nivel actual (SOLO VALOR) */
     function void drawLevel(int level) {
-        // Limpiar área de level primero
-        do Screen.setColor(false);  // Negro
-        do Screen.drawRectangle(160, 0, 280, 15);  // Borrar área de level
+        // Limpiar solo el área del número
+        do Screen.setColor(false);
+        // "LEVEL:" at col 20. 20*8 = 160. Width ~48. End ~208.
+        do Screen.drawRectangle(210, 0, 240, 15);
         
         // Dibujar nuevo level
-        do Output.moveCursor(0, 20);  // Centro superior
-        do Output.printString("LEVEL: ");
+        do Screen.setColor(true);
+        do Output.moveCursor(0, 27);  // Despues de "LEVEL:" (20 + 7)
         do Output.printInt(level);
         
         return;
@@ -131,7 +150,7 @@ class GameUI {
         
         // Mensaje (centrado: 64-30)/2 = 17)
         do Output.moveCursor(12, 17);
-        do Output.printString("Destruiste todos los bloques!");
+        do Output.printString("Completaste todos los niveles!");
         
         // Puntuación final (centrado: 64-12)/2 = 26)
         do Output.moveCursor(15, 26);
@@ -140,6 +159,34 @@ class GameUI {
         
         // Mensaje de cierre (centrado: 64-22)/2 = 21)
         do Output.moveCursor(19, 21);
+        do Output.printString("Presiona Q para ir al Menu");
+        
+        return;
+    }
+
+    /** Mostrar pantalla de nivel completado */
+    function void showLevelComplete(int score, int nextLevel) {
+        do Screen.clearScreen();
+        
+        // Título
+        do Output.moveCursor(8, 22);
+        do Output.printString("NIVEL COMPLETADO!");
+        
+        // Línea decorativa
+        do Screen.setColor(true);
+        do Screen.drawRectangle(150, 110, 360, 112);
+        
+        // Puntuación
+        do Output.moveCursor(11, 26);
+        do Output.printString("SCORE: ");
+        do Output.printInt(score);
+        
+        // Instrucciones para siguiente nivel
+        do Output.moveCursor(15, 18);
+        do Output.printString("Presiona ESPACIO para Nivel ");
+        do Output.printInt(nextLevel);
+        
+        do Output.moveCursor(18, 21);
         do Output.printString("Presiona Q para salir");
         
         return;
@@ -147,7 +194,6 @@ class GameUI {
     
     /** Mostrar pantalla de pausa */
     function void showPauseScreen() {
-        var int centerX, centerY;
         var int boxX1, boxY1, boxX2, boxY2;
         
         // Crear un cuadro en el centro
@@ -179,6 +225,15 @@ class GameUI {
         do Output.moveCursor(14, 25);
         do Output.printString("para continuar");
         
+        return;
+    }
+
+    /** Ocultar pantalla de pausa (restaurar fondo) */
+    function void hidePauseScreen() {
+        // Borrar exactamente el área del cuadro de pausa
+        do Screen.setColor(false);
+        // Usamos las mismas coordenadas que showPauseScreen
+        do Screen.drawRectangle(180, 100, 332, 156);
         return;
     }
     

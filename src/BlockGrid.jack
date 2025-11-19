@@ -92,7 +92,7 @@ class BlockGrid {
     method int checkCollision(Ball ball) {
         var int i;
         var Block block;
-        var boolean collision;
+        var int colDir;
         var int points;
         
         let i = 0;
@@ -101,9 +101,10 @@ class BlockGrid {
             
             // Solo verificar bloques activos
             if (block.isActive()) {
-                let collision = CollisionDetector.checkBallBlock(ball, block);
+                // Usar detección direccional para rebote correcto
+                let colDir = CollisionDetector.detectCollisionDir(ball, block);
                 
-                if (collision) {
+                if (colDir > 0) {
                     // Obtener puntos ANTES de destruir
                     let points = block.getPoints();
                     
@@ -111,8 +112,12 @@ class BlockGrid {
                     do block.destroy();
                     let activeBlocks = activeBlocks - 1;
                     
-                    // Hacer rebotar la pelota
-                    do ball.bounceVertical();
+                    // Hacer rebotar la pelota segun direccion de impacto
+                    if (colDir = 1) {
+                        do ball.bounceHorizontal();
+                    } else {
+                        do ball.bounceVertical();
+                    }
                     
                     // Retornar puntos para que BreakoutGame actualice score
                     return points;
@@ -164,18 +169,37 @@ class BlockGrid {
     }
     
     /** Reiniciar todos los bloques (para nuevo nivel) */
-    method void reset() {
-        var int i;
+    method void reset(int level) {
+        var int i, row, col;
         var Block block;
         
+        let activeBlocks = 0;
         let i = 0;
+        
         while (i < totalBlocks) {
             let block = blocks[i];
-            do block.activate();
+            let row = i / cols;
+            
+            // Logica de niveles:
+            // Nivel 1: Solo filas 0, 1 y 2 (30 bloques)
+            // Nivel 2: Todas las filas (50 bloques)
+            
+            if (level = 1) {
+                if (row < 3) {
+                    do block.activate();
+                    let activeBlocks = activeBlocks + 1;
+                } else {
+                    do block.destroy(); // Asegurar que esten inactivos
+                }
+            } else {
+                // Nivel 2 (o superior): Todo activo
+                do block.activate();
+                let activeBlocks = activeBlocks + 1;
+            }
+            
             let i = i + 1;
         }
         
-        let activeBlocks = totalBlocks;
         return;
     }
     

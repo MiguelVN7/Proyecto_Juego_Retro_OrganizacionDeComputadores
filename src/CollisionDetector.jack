@@ -47,8 +47,6 @@ class CollisionDetector {
     
     /** Verificar colisión entre pelota y bloque (AABB vs Circle) */
     function boolean checkBallBlock(Ball ball, Block block) {
-        var int ballX, ballY, ballRadius;
-        var int blockX, blockY, blockWidth, blockHeight;
         var int ballBottom, ballTop, ballLeft, ballRight;
         var int blockLeft, blockRight, blockTop, blockBottom;
         var boolean collision;
@@ -59,23 +57,16 @@ class CollisionDetector {
         }
         
         // Obtener datos de la pelota
-        let ballX = ball.getX();
-        let ballY = ball.getY();
-        let ballRadius = ball.getRadius();
         let ballBottom = ball.getBottom();
         let ballTop = ball.getTop();
         let ballLeft = ball.getLeft();
         let ballRight = ball.getRight();
         
         // Obtener datos del bloque
-        let blockX = block.getX();
-        let blockY = block.getY();
-        let blockWidth = block.getWidth();
-        let blockHeight = block.getHeight();
-        let blockLeft = blockX;
-        let blockRight = blockX + blockWidth;
-        let blockTop = blockY;
-        let blockBottom = blockY + blockHeight;
+        let blockLeft = block.getLeft();
+        let blockRight = block.getRight();
+        let blockTop = block.getTop();
+        let blockBottom = block.getBottom();
         
         // Verificar si hay solapamiento en ambos ejes
         let collision = false;
@@ -89,6 +80,60 @@ class CollisionDetector {
         }
         
         return collision;
+    }
+    
+    /** 
+     * Detectar dirección de colisión
+     * Retorna: 0=Ninguna, 1=Horizontal (Side), 2=Vertical (Top/Bottom)
+     * Resuelve el problema de rebotes incorrectos al golpear lados
+     */
+    function int detectCollisionDir(Ball ball, Block block) {
+        var int ballX, ballY, ballRadius;
+        var int blockX, blockY, blockWidth, blockHeight;
+        var int blockCenterX, blockCenterY;
+        var int dx, dy;
+        var int absDx, absDy;
+        var int overlapX, overlapY;
+        var int halfWidth, halfHeight;
+        
+        // Early exit if not active or no collision
+        if (~block.isActive()) { return 0; }
+        if (~CollisionDetector.checkBallBlock(ball, block)) { return 0; }
+        
+        let ballX = ball.getX();
+        let ballY = ball.getY();
+        let ballRadius = ball.getRadius();
+        
+        let blockX = block.getX();
+        let blockY = block.getY();
+        let blockWidth = block.getWidth();
+        let blockHeight = block.getHeight();
+        
+        let halfWidth = blockWidth / 2;
+        let halfHeight = blockHeight / 2;
+        
+        // Centro del bloque
+        let blockCenterX = blockX + halfWidth;
+        let blockCenterY = blockY + halfHeight;
+        
+        // Distancia entre centros
+        let dx = ballX - blockCenterX;
+        let dy = ballY - blockCenterY;
+        
+        let absDx = Math.abs(dx);
+        let absDy = Math.abs(dy);
+        
+        // Calcular overlap (penetración)
+        // minDist = suma de radio + mitad de dimensión
+        let overlapX = (halfWidth + ballRadius) - absDx;
+        let overlapY = (halfHeight + ballRadius) - absDy;
+        
+        // Si la penetración en X es menor que en Y, es un choque lateral
+        if (overlapX < overlapY) {
+            return 1; // Horizontal (Lado)
+        } else {
+            return 2; // Vertical (Arriba/Abajo)
+        }
     }
     
     /** Verificar colisión con paredes de la pantalla */
@@ -116,116 +161,6 @@ class CollisionDetector {
             let collision = true;
         }
         
-        // Verificar pared inferior (no es colisión, es perder vida)
-        // if (ballY > (screenHeight - ballRadius)) {
-        //     let collision = true;
-        // }
-        
         return collision;
-    }
-    
-    /** Verificar colisión entre dos rectángulos (AABB) */
-    function boolean rectCollision(int x1, int y1, int w1, int h1, 
-                                   int x2, int y2, int w2, int h2) {
-        var int left1, right1, top1, bottom1;
-        var int left2, right2, top2, bottom2;
-        var boolean collision;
-        
-        // Calcular límites del rectángulo 1
-        let left1 = x1;
-        let right1 = x1 + w1;
-        let top1 = y1;
-        let bottom1 = y1 + h1;
-        
-        // Calcular límites del rectángulo 2
-        let left2 = x2;
-        let right2 = x2 + w2;
-        let top2 = y2;
-        let bottom2 = y2 + h2;
-        
-        // Verificar solapamiento usando AABB (Axis-Aligned Bounding Box)
-        let collision = false;
-        
-        if ((right1 > left2) & (left1 < right2)) {
-            if ((bottom1 > top2) & (top1 < bottom2)) {
-                let collision = true;
-            }
-        }
-        
-        return collision;
-    }
-    
-    /** Verificar colisión entre círculo y rectángulo (útil para física avanzada) */
-    function boolean circleRectCollision(int cx, int cy, int radius,
-                                         int rx, int ry, int rw, int rh) {
-        var int closestX, closestY;
-        var int distanceX, distanceY;
-        var int distanceSquared;
-        var int radiusSquared;
-        var boolean collision;
-        
-        // Encontrar el punto más cercano del rectángulo al círculo
-        let closestX = cx;
-        let closestY = cy;
-        
-        // Limitar X
-        if (cx < rx) {
-            let closestX = rx;
-        }
-        if (cx > (rx + rw)) {
-            let closestX = rx + rw;
-        }
-        
-        // Limitar Y
-        if (cy < ry) {
-            let closestY = ry;
-        }
-        if (cy > (ry + rh)) {
-            let closestY = ry + rh;
-        }
-        
-        // Calcular distancia entre el punto más cercano y el centro del círculo
-        let distanceX = cx - closestX;
-        let distanceY = cy - closestY;
-        
-        // Calcular distancia al cuadrado (evitar raíz cuadrada)
-        let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
-        let radiusSquared = radius * radius;
-        
-        // Hay colisión si la distancia es menor que el radio
-        let collision = distanceSquared < radiusSquared;
-        
-        return collision;
-    }
-    
-    /** Verificar si un punto está dentro de un rectángulo */
-    function boolean pointInRect(int px, int py, int rx, int ry, int rw, int rh) {
-        var boolean inside;
-        
-        let inside = false;
-        
-        if ((px > rx) & (px < (rx + rw))) {
-            if ((py > ry) & (py < (ry + rh))) {
-                let inside = true;
-            }
-        }
-        
-        return inside;
-    }
-    
-    /** Verificar si un punto está dentro de un círculo */
-    function boolean pointInCircle(int px, int py, int cx, int cy, int radius) {
-        var int dx, dy, distanceSquared, radiusSquared;
-        var boolean inside;
-        
-        let dx = px - cx;
-        let dy = py - cy;
-        let distanceSquared = (dx * dx) + (dy * dy);
-        let radiusSquared = radius * radius;
-        
-        let inside = distanceSquared < radiusSquared;
-        
-        return inside;
     }
 }
-
